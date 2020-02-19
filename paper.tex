@@ -144,7 +144,7 @@ In this workflow, the \textbf{model} task is followed by postprocessing (\textbf
 \fig{width=0.6\columnwidth}{pic/cylc1}{Example of a Cylc workflow with its configuration file}
 
 The information Cylc uses to control a given workflow is the task dependency.
-The scientists make the configuration about parallelism and data location in the script file that is executed for each specific task.
+The developers define, in a script file, for each task the parallelism settings and where the data is to be stored.
 %Decisions about storage must take into consideration the system architecture and the relevance of heterogeneous infrastructure in which the workflow will run.
 
 \subsection{Workflow Execution}
@@ -305,7 +305,7 @@ Nowadays, in order to run a job in an HPC environment efficiently, researchers h
 However, applied scientists should not spend much time understanding hardware characteristics and operative knowledge of running a data centre, but using their time to develop their work and just collect and analyse their results.
 
 We aim for achieving an automatic and dynamic mapping of I/O resources to workflows.
-Once we have an automated decision about where the job will run and how the storage will be managed, scientists can then run their workflows on any system without further modification and even without previous knowledge about the system architecture.
+Once we have an automated decision about where the job will run and how the storage will be managed, scientists can then reuse their workflow specification on any system without further modification and even without previous knowledge about the system architecture.
 
 There are several approaches to implement the technology for the vision proposed in this work, and changes are needed for software components to realise it.
 In the next sections, we will discuss a specific design for our transitional roadmap considering climate and weather workflows and tools scientists from this field already use in their routine research.
@@ -607,6 +607,7 @@ For instance, in case of a missing data precision, data should be retained in or
 Knowing the dimension or size a priori might be difficult for scientists, e.g., the log file size is unclear.
 In this case, the user may insert relative information like small or big, reflecting that any information is better than no information at all.
 In future, we will explore how to automatically infer the output volume from the input or by using monitoring.
+By allowing to run using an empty I/O workflow specification and monitoring I/O accesses for one cycle, we can propose an I/O description to the user to simplify the specification.
 
 \subsection{Smarter I/O Scheduling}
 
@@ -698,10 +699,6 @@ This project is funded by the European Union's Horizon 2020 research and innovat
 \end{document}
 
 Machine Learning has been proven effective in replacing human-beings, and it may also adapt the workflow dynamically in case of unexpected situations (the system is down, nodes are unresponsive, etc.). (ref)
-
-By monitoring I/O accesses, we can automatically draft such I/O descriptions on behalf of the user to simplify the specification.
-
-All we need is to run one cycle of the specific workflow, considering that a workflow cycle is executed many times in climate and weather; this is a cheap approach.
 
 From the recorded I/O accesses, we analyse the I/O patterns and dependencies associated with it to generate the configuration file.
 
