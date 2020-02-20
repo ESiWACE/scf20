@@ -88,7 +88,7 @@ A weather forecast service such as the operational weather forecast workflow in 
 %\item N216-ORCA025 -- 700Gb per model year
 %\end{itemize}
 %Historical data spans over 170 years, generating 34Tb for low resolution and 119Tb for high resolution, while %projections will generate approximately half of this.
-In total, at the Met Office, on average 1.5\,PBs and 14\,PBs per day are written and read, respectively, for all climate and weather forecasts across all HPC clusters.
+In total, at the Met Office, on average 1.5\,PB and 14\,PB per day are written and read, respectively, for all climate and weather forecasts across all HPC clusters.
 %The above supports the view of how important data management already is and these numbers will grow with resolution and more ensembles.
 %Existing climate experiments do ensemble experiments sequentially as few institutions have resources for parallel climate ensembles.
 %That's an exascale use case requiring not only a big machine but the ability to schedule big jobs.
@@ -101,9 +101,10 @@ For example, porting a workflow from one system to another still requires adjust
 %\jk{I believe they do port aspects of workflows as scripts must be adjusted (where is data and such). Cylc team to reply}
 %\lr{It's not clear to me the difference between workflows and simulations. I can imagine that a simulation is a subset of a workflow, right? So, jobs, in terms of computer science?}
 
-Since performance is of crucial importance to large-scale workflows, careful attention must be paid to exploit the system characteristics of the target supercomputer.
-A specific supercomputer typically requires substantial changes to the workflow to tailor it to the particular machine and obtain the best performance.
-For instance, a data-driven workflow may benefit from using a heterogeneous set of computing and storage technology at the same time.
+Since performance is of crucial importance to large-scale workflows, careful attention must be paid to exploit the system characteristics of the target computing centre. 
+For instance, a data-driven workflow may benefit from the explicit and simultaneous use of a locally heterogeneous set of computing and storage technologies. 
+This means that substantial changes may be required to a workflow to tailor it to a particular supercomputer environment in order to obtain the best performance.
+
 
 Knowing the capabilities, interfaces, and performance characteristics of individual components are mandatory to make the best use of them.
 As the complexity of systems expands and alternative storage and computing technologies provide unique characteristics, it becomes increasingly difficult even for experts to manually optimise resource usage in workflows.
@@ -689,7 +690,7 @@ The changes proposed increase the opportunity for smarter scheduling of storage 
 
 \small
 This project is funded by the European Union's Horizon 2020 research and innovation programme under grant agreement No. 823988.
-We thank our collaborator Bryan Lawrence for their input to this article.
+We thank our collaborator Bryan Lawrence for his input to this article.
 
 \openaccess
 
