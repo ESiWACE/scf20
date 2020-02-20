@@ -13,6 +13,7 @@
 \usepackage{subcaption}
 \usepackage{comment}
 \usepackage{float}
+\usepackage[utf8]{inputenc}
 \usepackage{listings}
 \usepackage{textcomp} %for upquote=true (straight quotes)
 \definecolor{pblue}{rgb}{0.13,0.13,1}
@@ -170,7 +171,7 @@ In the following, each stage of the execution is further described.
 
   \item \textbf{Script} executes the shell commands which is one or multiple (potentially parallel) applications to run sequentially.
   During the creation of the script, Cylc has included variables that describe the task in the workflow.
-  The user script may use commands to create a filename considering the cycle of Cylc.
+  The user script may use commands to create a filename considering the cycle of Cylc or store data in a workflow-specific shared directory.
   The information is typically fed into the application(s) representing the task, and so defines the storage location.
 
   \item \textbf{Application} are executed taking the generated filenames set by the script.
@@ -240,7 +241,7 @@ Related work can be categorized into:
 2) solutions for workflow processing.
 
 \textbf{Technology.}
-Manual tiering requires the user or application to control the data placement, i.e., storing data (typically in the form of files on a particular storage system) and, usually, moving data between storage by scripts.
+Manual tiering requires the user or application to control the data placement, i.e., storing data typically in the form of files on a particular storage system and, usually, moving data between storage by scripts.
 One limitation of such an approach is that decisions about how data are mapped and packaged into files are made by the producing application, and cannot be changed without manual intervention by a downstream application.
 
 Burst buffer solutions provide a tiered storage system that aims to exploit a storage hierarchy.
@@ -260,16 +261,16 @@ Finally, there have also been extensions to batch schedulers to perform data sta
 
 \textbf{Workflows. }
 A good overview of the flavours of Scientific Workflow Management Systems (SWfMS) and their application to data-intensive workflows is given in \cite{liu2015survey}.
-The article states a SWfMS "should enable the parallel execution of data-intensive scientific workflows and exploit large amounts of distributed resources".
+The article states a SWfMS \textit{“should enable the parallel execution of data-intensive scientific workflows and exploit large amounts of distributed resources”}.
 %"An abstract scientific workflow is defined by the functionality of each activity (or sub-workflow) and data dependencies between activities (or sub-workflows)"
-Existing solutions recognize challenges in data variety (formats of the input data), the opportunity to optimize the schedule by moving code to data, and to consider capacity of available data storage.
-There have been also solutions that allow to specify the data dependencies for tasks.
+Existing solutions recognize challenges in data variety (formats of the input data), the opportunity to optimize the schedule by moving code to data, and may consider capacity of available data storage.
+There have been solutions that allow to specify the data dependencies for tasks.
 The execution engine Dryad~\cite{isard2007dryad}, for example, allows to transfer data between tasks via files or directly using TCP connections and attempts to schedule tasks on the same nodes or racks.
 Swift/T is a scripting language for describing dataflow processing allowing to execute ensembles of applications~\cite{ozik2016desktop}.
 Recent improvements aim to migrate data to a local cache allowing to exploit locality, e.g., in \cite{dai2018cross}, information about locality is proposed to be stored in extended attributes.
 In \cite{TUIBIHWLSC19}, an approach was presented to monitor and analyze IO behavior of HPC workflows.
 
-Various early research covers grid workflows and lately cloud use cases and attempts to maximize data locality in that respect.
+Various early research in grid workflows and lately cloud use cases attempts to maximize data locality in that respect.
 Economic factors (including storage costs) for workflow execution are discussed in \cite{alkhanak2016cost}.
 In \cite{deelman2019role}, the authors discuss the role of Machine Learning for workflow execution and elaborate an the general potential for resource provisioning such as optimization of runtime parameters, data movements, and hierarchical storage.
 An ML model is introduced in \cite{subedi2019leveraging} that stages data for in-situ analysis by exploiting the access patterns.
@@ -676,11 +677,11 @@ In the following, we describe the modifications we propose in this vision paper 
 \section{Conclusions}
 \label{sec:conclusions}
 
-Organising the data placement on storage tiers is typically performed manually (and particularly in the domain of climate and weather) by the users or via policies, leading to suboptimal optimisations.
-However, the manual optimization and hard-coding of storage locations is non-portable and an error-prone task.
+Organising the data placement on storage tiers is particularly in the domain of climate and weather performed by the users or via policies, leading often to suboptimal decisions.
+Additionally, the manual optimization and hard-coding of storage locations is non-portable and an error-prone task.
 We believe users must be able to express their workflows in an abstract fashion.
-By increasing the abstraction level for scientists, not only tedious manual optimisation could be automatised, but also optimization strategies for data placement and data reduction can be harnessed.
-With knowledge about the data pattern, the runtime system could generate (near-)optimal execution plans and monitor their execution.
+By increasing the abstraction level for scientists, not only tedious manual optimisation could be automatised, but also strategies for data placement and data reduction can be harnessed.
+With knowledge about the data pattern, the runtime system could generate optimized execution plans and monitor their execution.
 In this work, we describe the general vision and a specific design for the software stack in the domain in climate and weather that we work on in the ESiWACE project.
 The changes proposed increase the opportunity for smarter scheduling of storage in heterogeneous storage environments by considering the characteristics of data and system in a workflow.
 
@@ -688,6 +689,7 @@ The changes proposed increase the opportunity for smarter scheduling of storage 
 
 \small
 This project is funded by the European Union's Horizon 2020 research and innovation programme under grant agreement No. 823988.
+We thank our collaborator Bryan Lawrence for their input to this article.
 
 \openaccess
 
@@ -722,3 +724,9 @@ Exploiting the value and importance of data could improve the placement decision
 Data systems usually do not respect, or have knowledge of, the importance of their inherent data.
 
 %\hh{I like this idea of machine learning in storage system. A lot of analysis has been done on relation of I/O pattern and storage performance. But how to know the I/O pattern, data pattern in advance? Machine Learning can be used to find pattern. These patterns can then be used to schedule storage resources, data placement, data staging/migration, etc. These pattern can be gradually learned from running cycles of workflows over time, such that policies can evolve to have better performance when more and more cycles of workflow complete. }
+
+
+
+CYLC_SUITE_SHARE_DIR
+Typically the data generated by cylc workflows is stored in the “share” directory which is referenced by an environment variable rather than a command:
+https://cylc.github.io/doc/built-sphinx/suite-config.html#suite-share-directories
