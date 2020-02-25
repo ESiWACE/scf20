@@ -56,19 +56,25 @@
 \author{Julian M. Kunkel\footnote{\label{uread}University of Reading, Reading, United Kingdom}\orcidID{0000-0002-6915-1179} \and Luciana R. Pedro\footnoteref{uread}\orcidID{0000-0001-8365-6264}
 }
 
+\lr{JT, Hua ?}
+
 \title{Potential of I/O-Aware Workflows in Climate and Weather}
 
 \maketitle{}
 
 \begin{abstract}
 The efficient, convenient, and robust execution of data-driven workflows and enhanced data management are key for productivity in scientific computing.
-In HPC, the concerns of storage and computing are traditionally separated and optimised independently from each other and the needs of the end-to-end user. Still, in complex workflows, this is becoming problematic. These problems are particularly acute in climate and weather workflows, which as well as become increasingly complex and exploiting deep storage hierarchies, can involve multiple data centres.
+In HPC, the concerns of storage and computing are traditionally separated and optimised independently from each other and the needs of the end-to-end user. However, in complex workflows, this is becoming problematic. These problems are particularly acute in climate and weather workflows, which as well as become increasingly complex and exploiting deep storage hierarchies, can involve multiple data centres.
 
 The key contributions of this paper are:
-1) A sketch of a vision for an integrated data-driven approach, with a discussion of the associated challenges and implications, and 2) An architecture and roadmap consistent with that vision that would allow seamless integration into current climate and weather workflows as it utilises versions of mostly existing tools (Cylc, XIOS, DDN IME, and ESDM).
+1) A sketch of a vision for an integrated data-driven approach, with a discussion of the associated challenges and implications, and 2) An architecture and roadmap consistent with this vision that would allow seamless integration into current climate and weather workflows as it utilises versions of mostly existing tools (Cylc, XIOS, DDN IME, and ESDM).
 
-This vision is built on the belief that workflows composed of data, computing, and communication-intensive tasks should drive interfaces and hardware configurations to best support the programming models.
-When delivered, the work proposed here will increase the opportunity for smarter scheduling of computing and storage in heterogeneous storage systems.
+\lr{mostly??}
+
+The vision proposed here is built on the belief that workflows composed of data, computing, and communication-intensive tasks should drive interfaces and hardware configurations to best support the programming models.
+When delivered, this work will increase the opportunity for smarter scheduling of computing and storage in heterogeneous storage systems.
+
+\lr{computing and storage?? We talked about it before. Not only storage? I think the Cylc team spotted this problem too.}
 
 \keywords{workflow, climate, weather, heterogeneous storage, data-driven}
 \end{abstract}
@@ -81,19 +87,21 @@ When delivered, the work proposed here will increase the opportunity for smarter
 High-Performance Computing (HPC) harnesses the fastest available hardware components to enable the execution of tightly coupled applications from science and industry.
 Typical use-cases include numerical simulation of physical systems and analysis of large-scale observational data.
 In the domain of climate and weather, there is a considerable demand for the orchestration of ensembles of simulation models and the generation of data products.
-A weather forecast service such as the operational weather forecast workflow in Met Office writes around 200TB every day and reads around 600\,TB.
+A service such as the operational weather forecast workflow in Met Office writes around 200\,TB and reads around 600\,TB every day.
 %For a typical Met Office Unified Model (UM) from the Coupled Model Intercomparison Project (CMIP) run, some %rough estimates of data volumes are:
 %\begin{itemize}
 %\item N96-ORCA1 -- 200Gb per model year
 %\item N216-ORCA025 -- 700Gb per model year
 %\end{itemize}
 %Historical data spans over 170 years, generating 34Tb for low resolution and 119Tb for high resolution, while %projections will generate approximately half of this.
-In total, at the Met Office, on average 1.5\,PB and 14\,PB per day are written and read, respectively, for all climate and weather forecasts across all HPC clusters.
+In total, at the Met Office, on average 1.5\,PB and 14\,PB are written and read per day, respectively, for all climate and weather forecasts across all HPC clusters.
 %The above supports the view of how vital data management already is, and these numbers will grow with resolution and more ensembles.
 %Existing climate experiments do ensemble experiments sequentially as few institutions have resources for parallel climate ensembles.
 %That's an exascale use case requiring not only a big machine but the ability to schedule big jobs.
 
-Based on their needs, the HPC community has developed a software ecosystem that supports climate and weather scientists to execute their large-scale workflows.
+\lr{I don't quite understand the numbers.}
+
+Based on the needs of climate and weather researchers, the HPC community has developed a software ecosystem that supports scientists to execute their large-scale workflows.
 While the current advances correspond to a big leap forward, many processes still require experts.
 For example, porting a workflow from one system to another still requires adjusting runtime parameters of applications and deciding on how data is managed.
 
@@ -105,20 +113,30 @@ Since performance is of crucial importance to large-scale workflows, careful att
 For instance, a data-driven workflow may benefit from the explicit and simultaneous use of a locally heterogeneous set of computing and storage technologies.
 This means that substantial changes may be required to a workflow to tailor it to a particular supercomputer environment in order to obtain the best performance.
 
+\lr{For instance, a data-driven workflow may benefit from the explicit and simultaneous use of a locally heterogeneous set of computing and storage technologies.
+For example, porting a workflow from one system to another still requires adjusting runtime parameters of applications and deciding on how data is managed.}
+
+\lr{What the relation between those two examples? They should be together, no?}
+
+\lr{computing and storage technologies again.}
 
 Knowing the capabilities, interfaces, and performance characteristics of individual components are mandatory to make the best use of them.
-As the complexity of systems expands and alternative storage and computing technologies provide unique characteristics, it becomes increasingly difficult even for experts to manually optimise resource usage in workflows.
-In many cases, modifications are not performed because: 1) They are labour intense: any change to the workflow requires careful validation which may not pay off for small scale runs; 2) Users are not aware of the potential of the complex system; and, 3) because it is a one-time explorative workflow.
+As the complexity of systems expands and alternative storage and computing technologies provide unique characteristics, it becomes increasingly difficult even for experts to manually optimise the usage of resources in workflows. In many cases, modifications are not performed because: 1) They are labour intense: any change to the workflow requires careful validation which may not pay off for small scale runs; 2) It is a one-time explorative workflow and, 3) Users are not aware of the potential of the complex system.
+
 In this paper, we illustrate how knowing the Input/Output (I/O) characteristics of workflow tasks and overall experimental design helps to optimise the execution of climate and weather workflows.
 Exploiting this information automatically may increase the performance, throughput and cost-efficiency of the systems, providing an incentive to users and data-centres that cannot be neglected any longer.
 Our approach intends to reduce the burden on researchers and, at the same time, optimise the decisions about jobs running on HPC systems.
 
-This paper is structured as follows:
+\lr{computing and storage technologies again.}
+
+This paper is structured as follows.
 First, we describe the software stack involved in executing workflows in climate and weather in \Cref{sec:workflows}.
-Next, the vision for including knowledge about data requirements and characteristics is sketched in  \Cref{sec:vision} outlining the potential benefit the automatic exploitation may bring.
-Our design based on existing components in climate and weather is described in \Cref{sec:design}.
+Related work in heterogeneous storage environments and solutions for workflow processing are presented in \Cref{sec:art}.
+Next, the vision for including knowledge about data requirements and characteristics is sketched in \Cref{sec:vision} outlining the potential benefit the automatic exploitation might bring.
+Our design, based on existing components in climate and weather, is described in \Cref{sec:design}.
 The paper is concluded in \Cref{sec:conclusions}.
 
+\lr{data requirements and characteristics == data management?}
 
 \section{Workflows in Climate/Weather}
 \label{sec:workflows}
@@ -236,6 +254,7 @@ However, with a multitude of file systems which differ at each data centre, such
 Policy-driven systems and burst-buffers perform such optimisations automatically to some extent. However, as they lack information about the workflow, they cannot optimise workflows perfectly.
 
 \section{State-of-the-Art}
+\label{sec:art}
 
 Related work can be categorised into:
 1) technology that exploits heterogeneous storage environments and supports user-directed policies;
