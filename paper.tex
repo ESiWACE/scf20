@@ -92,8 +92,7 @@ In total, at the Met Office, on average 1.5\,PB and 14\,PB are written and read 
 %The above supports the view of how vital data management already is, and these numbers will grow with resolution and more ensembles.
 %Existing climate experiments do ensemble experiments sequentially as few institutions have resources for parallel climate ensembles.
 %That's an exascale use case requiring not only a big machine but the ability to schedule big jobs.
-
-\lr{I don't quite understand the numbers.}
+%\lr{I don't quite understand the numbers.}
 
 Based on the needs of climate and weather researchers, the HPC community has developed a software ecosystem that supports scientists to execute their large-scale workflows.
 While the current advances correspond to a big leap forward, many processes still require experts.
@@ -136,14 +135,14 @@ The information Cylc uses to control a given workflow is the task dependency.
 In a script file, the developers define, for each task, the parallelism settings and where the data is to be stored.
 %Decisions about storage must take into consideration the system architecture and the relevance of heterogeneous infrastructure in which the workflow will run.
 
+\fig{width=0.8\columnwidth}{pic/cylc1}{Example of a Cylc workflow with its configuration file}
+
 Consider the Cylc workflow for a toy monthly cycling workflow in \cref{pic/cylc1}.
 In this workflow, an atmospheric model (labelled as \texttt{model} in the figure) simulates the physics from a current state to predict the future, for example, a month later.
 In climate research, this process is repeated in the model to simulate years into the future.
 % Once the simulation of any month is computed, this task completes and implicitly the data for this month becomes available and can now be analysed.
 Once the simulation of any month is computed, the data for this month becomes available and can now be analysed.
 In this workflow, the task \texttt{model} is followed by tasks postprocessing (\texttt{post}), forecast verification (\texttt{ver}), and product generation (\texttt{prod}), all specified as a workflow in a Cylc configuration file (\texttt{flow.cylc}).
-
-\fig{width=0.8\columnwidth}{pic/cylc1}{Example of a Cylc workflow with its configuration file}
 
 \subsection{Workflow Execution}
 
@@ -184,7 +183,25 @@ In the following, each stage of the execution is further described.
 
 \subsection{I/O Stack of a Parallel Application}
 
-\fig{width=0.2\textwidth}{pic/layers-xios}{I/O path for an MPI-parallel application}
+% \fig{width=0.2\textwidth}{pic/layers-xios}{I/O path for an MPI-parallel application}
+
+\lr{Figs 3 and 4 together as an option.}
+
+\begin{figure}[b]
+    \begin{minipage}{.42\linewidth}
+        \centering
+        \includegraphics[width=0.42\textwidth]{pic/layers-xios}
+        \subcaption{I/O path for an MPI-parallel application}\label{pic/layers-xios}
+    \end{minipage}
+    \begin{minipage}{.58\linewidth}
+        \centering
+        \includegraphics[width=1\textwidth]{pic/system}
+        \subcaption{Example of an heterogeneous HPC landscape}\label{pic/system}
+    \end{minipage}
+    \vspace{5pt}
+    \caption{I/O stack and data centre infrastructure}
+    \label{fig:34}
+\end{figure}
 
 % In our example, we assume the application is parallelised for performance reasons using MPI.
 % Not just for performance reasons, it's about making enough memory too, so removed qualification.
@@ -220,9 +237,7 @@ Depending on the need, the storage characteristics range from predictable low-la
 % Burst buffer solutions provide a tiered storage system that aims to exploit a storage hierarchy. % (\url{https://www.ddn.com/products/ime-flash-native-data-cache/})
 The tasks within any given workflow could benefit from utilising different combinations of storage and computing infrastructure.
 
-\fig{width=0.6\columnwidth}{pic/system}{Example of an heterogeneous HPC landscape}
-
-\lr{Consider put figs 3 and 4 together to better use the space.}
+% \fig{width=0.6\columnwidth}{pic/system}{Example of an heterogeneous HPC landscape}
 
 \subsection{Data Management}
 \label{sec:datamanagement}
@@ -254,14 +269,13 @@ One limitation of such an approach is that decisions about how data are mapped a
 Burst buffer solutions provide a tiered storage system that aims to exploit a storage hierarchy.
 They can be integrated into hardware capabilities such as DDN IME~\cite{BODIAIFSFI19} or simple software solutions.
 A policy system, e.g., deployed on a burst buffer~\cite{RomanusRP15}, aims to simplify the data movement for the user, but typically migrates objects in the coarse granularity of files.
-File systems and data management software such as Spectrum Scale, HPSS, BeeGFS, \lr{ref about those topics? webpage as footnote, maybe?} and Lustre (e.g., using the progressive file layouts feature) provide hierarchical storage management allowing to store data on different storage technology according to administrator-provided policies.
+File systems and data management software such as IBM Spectrum Scale~\cite{SchmuckH02}, HPSS~\cite{528214}, BeeGFS~\cite{beegfs}, and Lustre~\cite{abs-1903-01955} (e.g., using the progressive file layouts feature) provide hierarchical storage management allowing to store data on different storage technology according to administrator-provided policies.
 However, the semantic information that can be used by this type of system to make decisions is limited, e.g., data location, file extension, age of the file, etc.
 
 The storage community had also adjusted various higher-level software to support storage tiering on top of several storage systems. For instance, ADIOS provides in-memory staging that had been exploited by a variety of applications~\cite{slawinska2013maya}.
 Hermes~\cite{kougkas2020acceleration} provides a multi-tiered I/O buffering system with pre-fetcher that provides several data placement policies.
-iRODS~\cite{rajasekar2010irods} is a rule-oriented data system that allows scientists to organise data into shareable collections and provide metadata such as the data life cycle. \lr{such as information about the data life cycle?}
-iRODS provides several patterns for workflows that consider data locality and data migration/replication.
-
+iRODS~\cite{rajasekar2010irods} is a rule-oriented data system that allows scientists to organise data into shareable collections and provides several patterns for workflows considering data locality and data migration/replication.
+% and provide metadata such as the data life cycle.
 Finally, there have also been extensions to batch schedulers to perform data staging for utilising node-local storage, for example, NORNS~\cite{miranda2019norns} as an extension to Slurm.
 
 \smallskip
@@ -333,7 +347,7 @@ This separation of concerns allows us to abstract from the workflow what is esse
 
 In general, climate and weather workflows allow specifying tasks and the dependencies among them.
 We aim to enhance the current information with characteristics for input and output, i.e., the datasets.
-An example workflow containing input datasets and (intermediate) products is illustrated in \cref{pic/workflow-s3-n}.
+An example workflow with \texttt{N} cycles containing input datasets and (intermediate) products is illustrated in \cref{pic/workflow-s3-n}.
 Round nodes represent tasks, squared nodes represent data, and arrows indicate dependencies.
 In the example, Task\,1 needs two datasets to perform its work, produces Product\,1, and it directly communicates with Task\,2.
 For each new cycle, the \texttt{checkpoint} from the previous cycle (Product\,1) is used as input to starting the next cycle.
@@ -341,8 +355,6 @@ Most of the workflow can run automatically, except for the manual quality contro
 This last step represents the typical uncertainty of data reuse, i.e., it is unclear how Product\,3 will be used further.
 In the approach proposed in this work, each task is annotated with the required input datasets and the generated products must include metadata such as data life cycle information, value of data, and how long it should be kept.
 The idea here is to embrace the concept that tasks dependencies are really imposed by datasets dependencies.
-
-\lr{Talk a little bit more about the figure and the N cycles.}
 
 \fig{width=0.8\columnwidth}{pic/workflow-s3-n}{Example of a high-level workflow with tasks and data dependencies}
 
@@ -443,9 +455,9 @@ The storage system can exploit such information by reducing the precision of dat
 %, in the so-called field space-time trade-off that has been applied in Cryptanalysis for already forty years~\cite{1056220}.
 By knowing how to rerun the workflow behind the data creation, a smarter storage system can automatically trade data availability for potential recomputation opportunities to optimise the cost-efficiency of the system.
 Intermediate states could be rerun by utilising virtualisation and container technologies.
-Consider \cref{pic/workflow-s3-n} again and that, at every K cycles of the workflow, the generated Product\,3 (from Cycle 1 to Cycle K) are used in a validation task, called here \texttt{check}.
+Consider \cref{pic/workflow-s3-n} again and that, at every \texttt{K} cycles of the workflow, the generated Product\,3 (from Cycle 1 to Cycle \texttt{K}) are used in a validation task, called here \texttt{check}.
 From the workflow, we know that $P_3 C_1$\footnote{The $P_i C_j$ notation represents the Product\,$i$ generated in the Cycle $j$.} will be used to construct $P_3 C_2$ and then \texttt{check}.
-This dataset would probably be stored somewhere, and it will not be used until the workflow reaches the K-th cycle.
+This dataset would probably be stored somewhere, and it will not be used until the workflow reaches the \texttt{K}-th cycle.
 One alternative is to delete it after it was first used and then recompute it when time is right.
 The cost of doing that is storing \texttt{checkpoint} and then use it to reconstruct $P_3 C_1$.
 If, for instance, $P_3 C_1$ is a large dataset, \texttt{checkpoint} is small, and computing time is short, it is easy to see that deleting and recomputing it may improve the costs of running the workflow.
@@ -697,7 +709,7 @@ The proposed changes increase the opportunity for smarter scheduling of storage 
 
 \small
 This project is funded by the European Union's Horizon 2020 research and innovation programme under grant agreement No. 823988.
-We thank our collaborators Bryan Lawrence, Glenn Greed, David Matthews, and Hua Huang for their input to this article.
+We thank our collaborators Bryan Lawrence, Glenn Greed, David Matthews, and Hua Huang for their input to this paper.
 
 \openaccess
 
