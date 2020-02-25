@@ -218,8 +218,9 @@ In \cref{pic/layers-xios}, for example, XIOS may perform parallel I/O via the Ne
 Within the ESiWACE project\footnote{\url{https://www.esiwace.eu/}}, we are developing the Earth System Data Middleware (ESDM)\cite{esdm} to allow applications with this kind of software stack to exploit heterogeneous storage resources in a data centre.
 The goal of ESDM is to provide parallel I/O for parallel applications, with advanced features to optimise subsequent read accesses.
 Implemented with a standalone API, it also provides NetCDF integration allowing usage in existing applications.
+Hence, in \cref{pic/layers-xios}, the HDF5 layer can be replaced with ESDM.
 
-\lr{We shoud talk about how ESDM would replace the components in Fig 3. That was in the text before and it's important.}
+\lr{I added the info of ESDM here, but also keep it in the original place (line 712).}
 
 \subsection{Data Center Infrastructure}
 
@@ -503,16 +504,15 @@ To automatically make scheduling decisions, the software stack needs to:
 
 \item Deliver information about dataset life cycle together with the workflow, and
 
-\item Adapt the resulting workflow, individual scripts and application executions to consider the potential for data placement and migration.
+\item Adapt the resulting workflow, individual scripts and application executions to consider the potential for data placement and migration.\lr{data placement and migration again.}
 
 \end{enumerate}
 
 \subsection{System Information}
 
-ESDM is used as I/O middleware in the parallel application (in NetCDF or directly) and orchestrates the I/O according to a configuration file.
-The information about the system is provided using a simplified ESDM configuration file (\texttt{esdm.conf}) provided by the data centre (or expert users).
+ESDM is used as I/O middleware in the parallel application (with NetCDF or directly) and orchestrates the I/O according to a simplified ESDM configuration file (\texttt{esdm.conf}).
+% The information about the system is provided using a simplified ESDM configuration file (\texttt{esdm.conf}) provided by the data centre (or expert users).
 This file contains information about the available technology in the data centre, its I/O characteristics, and will be used to make decisions about how to prioritise I/O targets.
-
 In the example presented in \Cref{lst:esdm.conf}, we have three storage targets: two global accessible file systems (\texttt{lustre01} and \texttt{lustre02}), and one local file system in \texttt{/tmp} that can be accessed via the POSIX backend.
 Each of them comes with a lightweight performance model and the maximum size of data fragments.
 The metadata section (Line 24) utilises here a POSIX interface to store the information about the ESDM objects. Internally, ESDM creates so-called containers and dataset objects to manage data fragments.
@@ -557,7 +557,7 @@ The metadata section (Line 24) utilises here a POSIX interface to store the info
 
 ESDM manages a pool of threads that should be created per compute node to achieve good performance and delegates the assignment of optimal block sizes to the storage backend.
 The number of threads is defined in the configuration file.
-As an example, based on the number of Object Storage Targets (OSTs) available to both Lustre systems at DKRZ, performance tests already developed by ESDM~\cite{2019_3361225} shows that no more than 200 threads in total should be used to perform I/O to extract the best performance.
+As an example, based on the number of Object Storage Targets (OSTs) available to\lr{on?} both Lustre systems at DKRZ, performance tests already developed using ESDM~\cite{2019_3361225} shows that no more than 200 threads in total should be used to perform I/O to extract the best performance.
 %; more degrade it.
 To clarify the behaviour, ESDM distributes a single dataset across multiple storage devices depending on their characteristics.
 Since ESDM also supports several (non-POSIX) storage backends, an application can utilise all available storage systems without any modifications to the code.
@@ -566,14 +566,14 @@ Since ESDM also supports several (non-POSIX) storage backends, an application ca
 %\lr{Well noticed. For me, ESDM would be responsible for finding those optimal numbers automatically. But then we had this sentence: ``The number of threads is defined in the configuration file.'', meaning that the user has to know. So I don't have an answer to it.}
 
 The configuration file is inquired by an application that utilises ESDM and steers the distribution of data during I/O.
-While the current system information and performance model is based on latency and throughput only, it shows that automatic decision making can be made on behalf of the user.
+While the current system information and performance model are based on latency and throughput only, it shows that automatic decision making can be made on behalf of the user.
 
 \subsection{Extended Workflow Description}
 
-The user now has to provide information about datasets required for input and the generated output for each Cylc task in a separate file similarly to Cylc's workflow configuration file.
-An example of an I/O-workflow configuration file is shown in \Cref{lst:cylc}. In this file, information about Task\,1 is given by example, and we expect the extra information about all tasks in the same file. Ultimately, this could be integrated into the workflow specification file of Cylc.
+The user now has to provide information about datasets required for input and the generated output for each workflow task in a separate file similarly to Cylc's workflow configuration file.
+An example of an I/O-workflow configuration file (\texttt{io.cylc}) is shown in \Cref{lst:cylc}. In this file, information about Task\,1 is given by example, and we expect the extra information about all tasks in the same file. Ultimately, this could be integrated into the workflow specification file of Cylc.
 
-\begin{lstlisting}[caption = External Cylc I/O-workflow configuration file, label=lst:cylc]
+\begin{lstlisting}[caption = External Cylc I/O-workflow configuration file (\texttt{io.cylc}), label=lst:cylc]
 [Task 1]
   [[inputs]]
     topography = "/pool/input/app/config/topography.dat"
@@ -602,12 +602,13 @@ An example of an I/O-workflow configuration file is shown in \Cref{lst:cylc}. In
       size = small
 \end{lstlisting}
 
-In this example, the workflow file could define a cycle flexibly to be a month or a year according to the Cylc workflow file.
+%In this example, the workflow file could define a cycle flexibly to be a month or a year according to the Cylc workflow file.
+In this example, the \texttt{io.cylc} file could define a cycle flexibly to be a month or a year according to the \texttt{flow.cylc} file.\lr{Again, where is this info? File flow.cylc? io.cylc? I'm rewriting it in the way I'm understanding.}
 The notation is similar to the specification of Cylc workflows using a nested INI format.
 For each task, inputs and outputs are defined.
 In the input section, each entry specifies the virtual name that is used by ESDM as a filename inside NetCDF.
 Line~3, for example, defines that the filename \texttt{topography} is mapped to a specific input file.
-This dataset does not depend on any previous step of the workflow.
+This dataset \lr{Is dataset the right term here?} does not depend on any previous step of the workflow.
 The next line specifies that the input filename \texttt{checkpoint} should be mapped to the output of Task~1 checkpoint dataset from the previous cycle (e.g., the checkpoint generated after completed the last year's output).
 For the initial cycle, the checkpoint file will be empty, and the application will load the init data.
 In the output section, the datasets are annotated with their characteristics more precisely.
@@ -654,48 +655,53 @@ Decisions about data locality will not be made for a whole (and potentially big)
 Instead, the system will make decisions by looking ahead to several steps of the workflow, allowing reacting to the observed dynamics of the execution.
 We utilise DDN's IME API to pin data in IME and to trigger migrations between IME and a storage backend explicitly.
 
-Ultimately, when a user-script runs, the information about the intended I/O schedule is communicated by modifying the "filename" which is then used by the ESDM-aware application to determine the I/O scheduler.
+% Ultimately, when a user-script runs, the information about the intended I/O schedule is communicated by modifying the filename, which is then used by the ESDM-aware application to determine the I/O scheduler.
+
+\lr{Check it, please.}
+
+Ultimately, when a user-script runs, the information about the intended I/O schedule is communicated from EIOS through a modified filename, which is then used by the ESDM-aware application to determine the final workflow schedule.
 
 \subsection{Modified Workflow Execution}
 
-The steps to execute a workflow enriched with I/O information and performing smarter scheduling is depicted in \cref{pic/stages-io}.
+The steps to execute a workflow enriched with I/O information and perform smarter scheduling is depicted in \cref{pic/stages-io}.
 The suggested alterations can be seen in boxes pointed by red arrows, and the remaining components are the current state-of-the-art for workflows in climate and weather from \cref{pic/stages}.
 
 In the following, we describe the modifications we propose in this vision paper for each component involved in the software stack.
 
-\fig{width=0.7\columnwidth}{pic/stages-io}{Software stack and stages of execution with our I/O-aware scheduler -- EIOS}
+\fig{width=0.7\columnwidth}{pic/stages-io}{Software stack and stages of execution with the I/O-aware scheduler (EIOS)}
 
 \begin{enumerate}
 
-  \item \textbf{Scientist} The end-user now has to provide an additional file that covers the I/O information for each task and slightly changes (discussed above) have to be made to the current scripts.
+  \item \textbf{Scientist} The end-user \lr{Is the end-user the scientist?} now has to provide an additional file that covers the I/O information for each task and slightly changes have to be made to the current scripts (discussed above).\lr{Where? I'm lost again. Do we change anything in the original scripts that the user has to provide? He has to provide an additional file and then everything will be under our control, no? The scripts will change, but not by the user, by EIOS.}
 
   \item \textbf{Cylc} EIOS is invoked by Cylc to identify potential optimisations in the schedule before generating the Slurm script.
   %\hh{Cylc has to be extended to call EIOS? How is this achieved?}
   %\lr{We talked to the Cylc team, and they will deal with it, I suppose.}
   %\jk{Modifying Cylc, Cylc team to decide, not yet decided how that will work, Python code.....}
 
-  \item \textbf{\color{red}{EIOS}} The ESDM I/O Scheduler reads the information about the workflow (original and I/O workflow configuration files) and acts depending on the stage of the execution.
+  \item \textbf{\color{red}{EIOS}} The ESDM I/O Scheduler reads the information about the workflow (\texttt{flow.cylc} and \texttt{io.cylc} configuration files) and acts depending on the stage of the execution.
   EIOS consists of several subcomponents:
     \begin{itemize}
 
       \item The high-level scheduler that interfaces with Cylc.
 
-      \item A tool to generate pseudo-file names used by the ESDM-aware applications.
+      \item A tool to generate pseudo filenames used by the ESDM-aware applications.
 
-      \item A data management service (not shown on the figure) that migrate and purge data at the end of the life cycle.
+      \item A data management service (not shown in the figure) that migrate and purge data at the end of the life cycle.
     \end{itemize}
   EIOS components use knowledge about the system by parsing the \texttt{esdm.conf} file.
   EIOS may decide that subsequent jobs shall be placed on the same node, reorder the execution of some jobs, and provide information for conducting data migration.
 
   \item \textbf{Slurm}
-  Cylc may now have added an optimisation identified by EIOS, and that is now handled by a modified Slurm.
+  Cylc may now have added an optimisation identified by EIOS which is now handled by a modified Slurm.
   Also, if migrations have to be performed, Slurm will administer them according to the specification in the job script.
   %\lr{Already inserted in the idea of the previous sentence.}
   %\lr{It's clear the idea about what's really going on in each part is still not clear.}
 
   \item \textbf{Job}
-  A job might run on the same nodes than a previous job to utilise local storage.
+  A job might run on the same node than a previous job to utilise local storage.
   %\bnl{Any interesting that needs this performance is running on dozens if not hundreds of nodes}
+  \lr{Only that might happen?}
 
   \item \textbf{Script}
   Filenames are now generated by a replacement command that calls EIOS to create a pseudo filename.
@@ -705,7 +711,9 @@ In the following, we describe the modifications we propose in this vision paper 
   The application may either use XIOS, NetCDF with ESDM support or ESDM directly to access datasets.
   Hence, in \cref{pic/layers-xios}, the HDF5 layer is replaced with ESDM.
   ESDM loads the \texttt{esdm.conf} file that contains the information about the available storage backends and their characteristics.
-  ESDM extracts the long-term schedule information from the generated pseudo filenames and employs it during the I/O scheduling to optimise the storage considering data locality between tasks.
+  ESDM extracts the long-term schedule information from the generated pseudo filenames and employs it during the I/O scheduling to optimise the storage considering data locality between tasks.\lr{Is that really the only thing we are exploring?}
+
+  \lr{In this happening in the application level? Not before slurm? I'm confused now.}
 
 \end{enumerate}
 
@@ -718,7 +726,7 @@ We believe users must be able to express their workflows abstractly.
 By increasing the abstraction level for scientists, not only tedious manual optimisation could be automatised, but also strategies for data placement and data reduction can be harnessed.
 With knowledge about the data pattern, the runtime system could generate optimised execution plans and monitor their execution.
 In this work, we describe the general vision and a specific design for the software stack in the domain in climate and weather that we work on in the ESiWACE project.
-The proposed changes increase the opportunity for smarter scheduling of storage in heterogeneous storage environments by considering the characteristics of data and system in a workflow.
+The proposed changes increase the opportunity for smarter scheduling of storage in heterogeneous storage environments by considering the characteristics of data and system \lr{architecture, maybe?} in a workflow.
 
 \section*{Acknowledgements}
 
