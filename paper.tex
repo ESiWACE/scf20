@@ -263,8 +263,8 @@ Policy-driven systems and burst-buffers perform such optimisations automatically
 \label{sec:art}
 
 Related work can be categorised into:
-1) technology that exploits heterogeneous storage environments and supports user-directed policies;
-2) solutions for workflow processing.
+1) Technology that exploits heterogeneous storage environments and supports user-directed policies and
+2) Solutions for workflow processing.
 
 \textbf{Technology.}
 Manual tiering requires the user or application to control the data placement, i.e., storing data typically in the form of files on a particular storage system and, usually, moving data between storage by scripts.
@@ -273,33 +273,33 @@ One limitation of such an approach is that decisions about how data are mapped a
 Burst buffer solutions provide a tiered storage system that aims to exploit a storage hierarchy.
 They can be integrated into hardware capabilities such as DDN IME~\cite{BODIAIFSFI19} or simple software solutions.
 A policy system, e.g., deployed on a burst buffer~\cite{RomanusRP15}, aims to simplify the data movement for the user, but typically migrates objects in the coarse granularity of files.
-File systems and data management software such as Spectrum Scale, HPSS, BeeGFS, and Lustre (e.g., using the progressive file layouts feature) provide hierarchical storage management allowing to store data on different storage technology according to such administrator-provided policies.
-However, the semantical information that can be used by this type of system to make decisions is limited, e.g., data location, file extension, age of the file, etc.
+File systems and data management software such as Spectrum Scale, HPSS, BeeGFS, \lr{ref about those topics? webpage as footnote, maybe?} and Lustre (e.g., using the progressive file layouts feature) provide hierarchical storage management allowing to store data on different storage technology according to administrator-provided policies.
+However, the semantic information that can be used by this type of system to make decisions is limited, e.g., data location, file extension, age of the file, etc.
 
-The storage community had also adjusted various higher-level software to support storage tiering on top of several storage systems. For instance, ADIOS provides in-memory staging that had been exploited by applications~\cite{slawinska2013maya}.
-Hermes~\cite{kougkas2020acceleration}, provides a multi-tiered I/O buffering system with pre-fetcher that provides several data placement policies.
-iRODS~\cite{rajasekar2010irods}, is the rule-oriented data system that allows scientists to organise data into shareable collections and provide metadata such as information about the data life cycle.
-The system provides several patterns for workflows that consider data locality and data migration/replication.
+The storage community had also adjusted various higher-level software to support storage tiering on top of several storage systems. For instance, ADIOS provides in-memory staging that had been exploited by applications~\cite{slawinska2013maya}. \lr{What kind of applications? Medical, climate, industrial, etc.}
+Hermes~\cite{kougkas2020acceleration} provides a multi-tiered I/O buffering system with pre-fetcher that provides several data placement policies.
+iRODS~\cite{rajasekar2010irods} is a rule-oriented data system that allows scientists to organise data into shareable collections and provide metadata such as information about the data life cycle. \lr{such as information about the data life cycle? I don't get it.}
+The system provides several patterns for workflows that consider data locality and data migration/replication. \lr{Which system? Is still talking about iRODS?}
 
-Finally, there have also been extensions to batch schedulers to perform data staging for utilising node-local storage, for example, NORNS as an extension to Slurm~\cite{miranda2019norns}.
+Finally, there have also been extensions to batch schedulers to perform data staging for utilising node-local storage, for example, NORNS~\cite{miranda2019norns} as an extension to Slurm.
 
 \smallskip
 
 \textbf{Workflows. }
-A good overview of the flavours of Scientific Workflow Management Systems (SWfMS) and their application to data-intensive workflows is given in \cite{liu2015survey}.
-The article states an SWfMS \textit{“should enable the parallel execution of data-intensive scientific workflows and exploit large amounts of distributed resources”}.
+A good overview of the flavours \lr{flavours?} of Scientific Workflow Management Systems (SWfMS) and their application to data-intensive workflows is given in \cite{liu2015survey}.
+The article states that SWfMS should enable the parallel execution of data-intensive scientific workflows and exploit large amounts of distributed resources.
 %"An abstract scientific workflow is defined by the functionality of each activity (or sub-workflow) and data dependencies between activities (or sub-workflows)"
-Existing solutions recognise challenges in data variety (formats of the input data), the opportunity to optimise the schedule by moving code to data, and may consider the capacity of available data storage.
-There have been solutions that allow specifying the data dependencies for tasks.
+Existing solutions recognise challenges in data variety (formats of the input data), opportunities to optimise the schedule by moving code to data, allow specifying the data dependencies for tasks, and they even may consider the capacity of the available data storage.
 The execution engine Dryad~\cite{isard2007dryad}, for example, allows transferring data between tasks via files or directly using TCP connections and attempts to schedule tasks on the same nodes or racks.
 Swift/T is a scripting language for describing dataflow processing allowing to execute ensembles of applications~\cite{ozik2016desktop}.
-Recent improvements aim to migrate data to a local cache allowing to exploit locality, e.g., in \cite{dai2018cross}, information about locality is proposed to be stored in extended attributes.
+Recent improvements aim to migrate data to a local cache allowing to exploit locality.
+For instance, in \cite{dai2018cross}, information about locality is proposed to be stored in extended attributes.
 In \cite{TUIBIHWLSC19}, an approach was presented to monitor and analyse I/O behaviour of HPC workflows.
 
 Various early research in grid workflows and lately cloud use cases attempts to maximise data locality in that respect.
 Economic factors (including storage costs) for workflow execution are discussed in \cite{alkhanak2016cost}.
-In \cite{deelman2019role}, the authors discuss the role of Machine Learning for workflow execution and elaborate a general potential for resource provisionings such as optimisation of runtime parameters, data movements, and hierarchical storage.
-An ML model is introduced in \cite{subedi2019leveraging} that stages data for in-situ analysis by exploiting the access patterns.
+In \cite{deelman2019role}, the authors discuss the role of Machine Learning (ML) for workflow execution and elaborate a general potential for resource provisionings such as optimisation of runtime parameters, data movements, and hierarchical storage.
+In \cite{subedi2019leveraging}, an ML model that stages data for in-situ analysis by exploiting the access patterns is introduced.
 
 
 %TRIO: Burst Buffer Based I/O Orchestration. In: 2015 IEEE International conference on cluster computing, Chicago, IL, USA, 8–11 September 2015, pp. 194–203. Washington, DC: IEEE.
@@ -316,11 +316,10 @@ An ML model is introduced in \cite{subedi2019leveraging} that stages data for in
 
 Workflow systems can also be utilised specifically to reproduce scientific results, i.e., recompute the results.
 Those scalable workflow solutions typically utilise a container solution to allow execution in an arbitrary software environment.
-Popper~\cite{jimenez2017popper}, Snakemake~\cite{bts480}, and Nextflow~\cite{Nextflow} provide a language to specify workflows and to execute them.
+Popper~\cite{jimenez2017popper}, Snakemake~\cite{bts480}, and Nextflow~\cite{Nextflow} provide a language \lr{Is it a DSL? I think it's important to emphasize this here.} to specify workflows and to execute them.
 Snakemake is interesting as it supports to define and infer input and output filenames.
 
 While various aspects of our vision have been addressed individually by related work for different domains, the high level of abstraction that we aim for and the potential it unleashes goes beyond the capabilities of existing approaches.
-
 
 \section{Vision for I/O-Aware Workflows}
 \label{sec:vision}
