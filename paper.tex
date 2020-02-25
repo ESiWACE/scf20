@@ -250,7 +250,7 @@ Usually, the scripts representing tasks define how the data is placed on the ava
 What happens in many current workflows is that they ignore the benefits of using multiple file systems concurrently and the data locality between tasks to colocating them.
 On top of that, in the current state-of-the-art, scientists optimise the available storage resources intuitively and compile the information about this decision-making process manually.
 
-If a user \lr{it's really the user here?} knows the workflow and the system characteristics, s/he can optimise data placement decisions.
+If a user \lr{It's really the user here?} knows the workflow and the system characteristics, s/he can optimise data placement decisions.
 Consider, for instance, the situation where each computing node has access to three file systems: a fast \texttt{scratch} file system on which data may reside only for a week, a slower \texttt{work} file system, and a \texttt{local} file system.
 Most current workflows utilise \texttt{work} and \texttt{scratch} systems.
 When a task is set to run, the corresponding dataset would be moved from \texttt{work} to \texttt{scratch}, processed, and the resulting dataset would be transferred back to \texttt{work}.
@@ -324,18 +324,20 @@ While various aspects of our vision have been addressed individually by related 
 \section{Vision for I/O-Aware Workflows}
 \label{sec:vision}
 
-Nowadays, in order to run a job in an HPC environment efficiently, researchers have to develop profound knowledge, not only about their workflow, which is expected, but also about decisions regarding storage, communication, and computing including considerations regarding cost-efficiency of their operations.
-However, applied scientists should not spend much time understanding hardware characteristics and operative knowledge of running a data centre, but using their time to develop their work and just collect and analyse their results.
+Nowadays, in order to run a job in an HPC environment efficiently, researchers have to develop profound knowledge, not only about their workflow, which is expected, but also about decisions regarding storage, communication, computing, and considerations regarding cost-efficiency of those operations.
+However, applied scientists should not spend much time understanding hardware characteristics and operative knowledge of running a data centre, but using their knowledge to develop their work and just collect and analyse the results.
 
 We aim for achieving an automatic and dynamic mapping of I/O resources to workflows.
 Once we have an automated decision about where the job will run and how the storage will be managed, scientists can then reuse their workflow specification on any system without further modification and even without previous knowledge about the system architecture.
 
-There are several approaches to implement the technology for the vision proposed in this work, and changes are needed for software components to realise it.
+There are several approaches to implement the technology for the vision proposed in this work, and changes are needed in the software components to realise it.
 In the next sections, we will discuss a specific design for our transitional roadmap considering climate and weather workflows and tools scientists from this field already use in their routine research.
+
+\lr{"a specific design" here? Next section, no?}
 
 Our vision for I/O-aware workflows requires two additional pieces of information.
 Firstly, the user must augment the workflow description with information about I/O requirements and explicitly annotate dependencies to datasets.
-Secondly, the data centre (or expert user) must provide details about the storage architecture.
+Secondly, details about the storage architecture must be available.
 
 \subsection{System Information}
 
@@ -343,21 +345,23 @@ While many optimisations are possible once an abstraction is in place, the impro
 To achieve that, the system information shall comprise of all available storage systems, the system topology, and details of each of the required components.
 Simplified and complex models of the components can be included to approximate expected performance for specific I/O patterns.
 It is expected that the data centre (or expert users) can create such a configuration file, e.g., by using vendor-provided information or by executing benchmarks.
-With this information, a scheduler can make data placement, transformation, and migration decisions for individual datasets during their life cycle.
-This separation of concerns allows us to abstract from the workflow what is essential and what a system should optimise to ensure smart usage of available resources.
+With this information, a scheduler can make data placement, transformation, and migration decisions for individual datasets during their life cycle.\lr{The scheduler making data transformation? And it's migration already classified as data placement?}
+This separation of concerns allows us to abstract from the workflow what is essential and what a system should optimise to ensure smart usage of the available resources.
 
 \subsection{Extended Workflow Description}
 
 In general, climate and weather workflows allow specifying tasks and the dependencies among them.
-We aim to enhance the current information with characteristics for input, and output, i.e., the datasets.
+We aim to enhance the current information with characteristics for input and output, i.e., the datasets.
 An example workflow containing input datasets and (intermediate) products is illustrated in \cref{pic/workflow-s3-n}.
-Nodes represent tasks or data, and arrows indicate the dependencies.
-In the example, Task\,1 needs two datasets to perform its work, it directly communicates with Task\,2 and produces Product\,1.
-For each new cycle, the \texttt{checkpoint} from the previous cycle, called here Product\,1, is used as input to starting the next cycle.
+Round nodes represent tasks, squared nodes represent data, and arrows indicate dependencies.
+In the example, Task\,1 needs two datasets to perform its work, produces Product\,1, and it directly communicates with Task\,2.
+For each new cycle, the \texttt{checkpoint} from the previous cycle (Product\,1) is used as input to starting the next cycle.
 Most of the workflow can run automatically, except for the manual quality control of the products and the final data usage of Product\,3.
 This last step represents the typical uncertainty of data reuse, i.e., it is unclear how Product\,3 will be used further.
-In the approach proposed in this work, each task is annotated with the required input datasets and the generated products must include metadata such as data life cycle information, the value of data, and how long it should be kept.
+In the approach proposed in this work, each task is annotated with the required input datasets and the generated products must include metadata such as data life cycle information, value of data, and how long it should be kept.
 The idea here is to embrace the concept that tasks dependencies are really imposed by datasets dependencies.
+
+\lr{Talk a little bit more about the figure and the N cycles.}
 
 \fig{width=0.8\columnwidth}{pic/workflow-s3-n}{Example of a high-level workflow with tasks and data dependencies}
 
@@ -371,21 +375,22 @@ The abstraction and automation of the I/O inside a workflow allow a runtime syst
 Taking into consideration the architecture and workflow information, a smarter schedule can now be realised by exploiting the additional information.
 Value and priority can influence fault-tolerance strategies and imply the quality of service for performance and availability.
 Aspects like data reproducibility (can it be recomputed easily), type of the experiment (test, production), and runtime constraints for the overall and potential workflow could allow reducing costs and, hence, increasing scientific output.
-Next, we outline the two core strategies, and potential the proposed vision can bring to improve current workflows.
+Next, we outline the two core strategies and potential the proposed vision can bring to improve current workflows.
+In the design proposed in this work (\cref{sec:design}), we will focus on the data placement strategy.
 
 % \subsubsection{Data Placement}
 
 \paragraph{Strategy: Data Placement.}
 
 Data placement encompasses all data movement-related activities such as transfer, staging, replication, space allocation and de-allocation, registering and unregistering metadata, locating and retrieving data\footnote{https://www.igi-global.com/dictionary/data-aware-distributed-batch-scheduling/6782}.
-The general idea is to host a data set on the storage system that is most favourable in terms of performance, cost-effectiveness, availability for the access pattern observed by the workflow.
-It requires to optimise data locality, where locality is twofold, spatial and temporal on a variety of characteristics.
+The general idea is to host a dataset on the storage system that is most favourable in terms of performance, cost-effectiveness, availability for the access pattern observed in the workflow.
+Here we are considering the optimisation of data locality, where locality is twofold, spatial and temporal on a variety of characteristics.
 For optimising data placement, there are several approaches:%: \textbf{in-memory data}, \textbf{data allocation}, \textbf{data migration}, and \textbf{data replication}.
 
 \begin{description}
 
 \item[Data Allocation] is the assignment of a specific area of an available storage system to particular data.
-In current workflows, usually, the user has a script for each task defining the filenames with a prefix that places datasets generated by the same task into a specific storage\footnote{Complicated scripts would have allowed changing the storage type depending on the cycle. Still, it is a significant burden to the user.}.
+In current workflows, the user usually has a script for each task defining the filenames with a prefix that places datasets generated by the same task into a specific storage\footnote{Complicated scripts would have allowed changing the storage type depending on the cycle. Still, it is a significant burden to the user.}.
 Because there is one script responsible for generating the configuration, the decision in which directory the dataset will be stored is somewhat fixed.
 Such configuration is done manually and with restricted information about the system architecture.
 It would be interesting to explore storage options for the datasets and, e.g., having datasets from different cycles placed at different storage systems.
@@ -393,16 +398,20 @@ For instance, in \cref{pic/workflow-s3-n}, alternating the storage location for 
 However, currently, that implies having at least two scripts for that task with information about the different storage placement.
 %Next, we exemplify three situations in which data placement can be optimised.
 
+\lr{Weak justification. We are better than that.}
+
 \item[Data Migration] is the process of transferring data from one storage system to another.
 Data movement involves a significant overhead, both in terms of latency and energy-efficient computing, hence needs to be considered carefully.
 \cref{fig:lifecycle} introduces three possible life cycles for a specific dataset and explains how migrations can be done to improve datasets accessibility.
-In \cref{fig:lifecycle1}, the dataset could be stored on the \texttt{local} storage first to avoid congestion on the \texttt{work} file system, then be migrated to \texttt{work} file system where subsequent tasks of the workflow may read it multiple times.
-In the end, this dataset might be an intermediate product that can then be deleted.
-Alternatively (see \cref{fig:lifecycle2}), the dataset could be stored on the \texttt{scratch} file system immediately and accessed there.
-However, that would require subsequent tasks to be placed on the same node where data is now stored, and the last read access must happen before files on \texttt{scratch} are automatically removed.
-The last scenario (see \cref{fig:lifecycle3}) presents the case where the dataset is created on \texttt{work} by a task and it is copied to a \texttt{local} node.
+In \cref{fig:lifecycle1}, the dataset could be first stored on the \texttt{local} storage to avoid congestion on the \texttt{work} file system, then be migrated to \texttt{work} file system where subsequent tasks of the workflow may read it multiple times.
+In the end, this dataset may be an intermediate product that can then be deleted.
+In \cref{fig:lifecycle2}, the dataset is stored on the \texttt{scratch} file system immediately and accessed there.
+%However, that would require subsequent tasks to be placed on the same node where data is now stored, and the last read access must happen before files on \texttt{scratch} are automatically removed.
+However, the last read access must happen before files on \texttt{scratch} are automatically removed.
+Alternatively, \cref{fig:lifecycle3} presents the case where the dataset is created on \texttt{work} by a task and it is copied to a \texttt{local} node.
 This \texttt{local} node allows reading accesses of subsequent tasks which might be beneficial for small random accesses.
-However, it would require that the subsequent tasks are placed on the same node where data is now stored.
+For the last two scenarios, subsequent tasks would have to be placed on the same node where previous data was stored.
+%However, it would require that the subsequent tasks are placed on the same node where data is now stored.
 
 \begin{figure}[b]
     \begin{minipage}{.33\linewidth}
@@ -425,16 +434,18 @@ However, it would require that the subsequent tasks are placed on the same node 
     \label{fig:lifecycle}
 \end{figure}
 
+\lr{If we are really migrating, why do we have to deletes in (a) and (c)? Maybe the delete should appear at the same time as the migration in the timeline.}
+
 \item[Data Replication] in computing involves sharing information to ensure consistency between redundant resources, such as software or hardware components, to improve reliability, fault-tolerance, or accessibility.
 Data might be replicated by enabling the system to rerun parts of the workflow in case of a data loss.
-In addition, the system may combine the replication of data by \textbf{transforming} the data into a different representation allowing to achieve better performance for a variety of access patterns.
+In addition, the system may combine the replication of data by \textbf{transforming} the data into a different representation allowing to achieve better performance for a variety of access patterns. \lr{Talk about ESDM!}
 
 \item[Direct-Coupling] replaces I/O by communicating data between subsequent steps of a workflow directly without storing intermediate data products on persistent storage.
 As an example, in \cref{pic/workflow-s3-n}, the outcome of Task\,1 may be used directly by Task\,2.
-To achieve decoupling between producer and consumer, it may also be kept in memory and cached.
+To achieve decoupling\lr{Decoupling in the direct-coupling session? Confusing to me.} between producer and consumer, data may also be kept in memory and cached.
 \end{description}
 
-In the design proposed in this work (\cref{sec:design}), we will focus on the data placement strategy.
+\lr{We talked about balancing the text for each item. I think there was no time for it, right?}
 
 \paragraph{Strategy: Data Reduction.}
 
@@ -449,22 +460,20 @@ The storage system can exploit such information by reducing the precision of dat
 
 %\lr{Towards Decoupling the Selection of Compression Algorithms from Quality Constraints: An Investigation of Lossy Compression Efficiency~\cite{TDTSOCAFQC17}}
 
-\item[Data Recomputation] Climate/weather scientists are trading recomputation with space usage manually.%, in the so-called field space-time trade-off that has been applied in Cryptanalysis for already forty years~\cite{1056220}.
+\item[Data Recomputation] Climate/weather scientists are trading recomputation with space usage manually.
+%, in the so-called field space-time trade-off that has been applied in Cryptanalysis for already forty years~\cite{1056220}.
 By knowing how to rerun the workflow behind the data creation, a smarter storage system can automatically trade data availability for potential recomputation opportunities to optimise the cost-efficiency of the system.
 Intermediate states could be rerun by utilising virtualisation and container technologies.
 Consider \cref{pic/workflow-s3-n} again and that, at every K cycles of the workflow, the generated Product\,3 (from Cycle 1 to Cycle K) are used in a validation task, called here \texttt{check}.
-From the workflow\footnote{The $P_i C_j$ notation represents the Product\,$i$ generated in the Cycle $j$.}, we know that $P_3 C_1$ will be used to construct $P_3 C_2$ and then \texttt{check}.
-This dataset will probably be stored somewhere, and it will not be used until the workflow reaches the K-th cycle.
+From the workflow, we know that $P_3 C_1$\footnote{The $P_i C_j$ notation represents the Product\,$i$ generated in the Cycle $j$.} will be used to construct $P_3 C_2$ and then \texttt{check}.
+This dataset would probably be stored somewhere, and it will not be used until the workflow reaches the K-th cycle.
 One alternative is to delete it after it was first used and then recompute it when time is right.
 The cost of doing that is storing \texttt{checkpoint} and then use it to reconstruct $P_3 C_1$.
-If, for instance, $P_3 C_1$ is a large dataset, \texttt{checkpoint} is small, and computing time is short.
-It is easy to see that deleting and recomputing it may improve the costs of running a workflow.
+If, for instance, $P_3 C_1$ is a large dataset, \texttt{checkpoint} is small, and computing time is short, it is easy to see that deleting and recomputing it may improve the costs of running the workflow.
 %We need, then, information about datasets volume and computing time to be able to make an accurate decision.
 %The bottom line here is: there are situations in which decisions are being made without considering all the available %information and possible scenarios.
-This is just an example, and, currently, scientists perform optimisations manually.
+This is just an example, and, currently, scientists perform those optimisations manually.
 \end{description}
-
-
 
 \subsection{Benefit}
 
@@ -478,7 +487,7 @@ The benefits of the proposed vision are:
 In particular, by exposing the heterogeneous architecture, potentially runtime characteristics can be considered.
 By using information about the value of data, policies for data management (storage resilience,  recomputation, replication, etc.) can be decided.
 
-\item[Performance-portability] With both abstraction and optimisation, the user can specify the I/O requirements only once for the tasks of a specific workflow, and the workflow can now run on any system without user intervention.
+\item[Performance-portability] With both abstraction and optimisation, the user can specify the I/O requirements only once for the tasks of a specific workflow, and the I/O-aware workflow can now run with optimised data storage on any system without user intervention.
 Even more, if the system characteristics change, e.g., it gets upgraded, an additional storage tier becomes available, or if storage degrades, the I/O-aware workflow could automatically adapt and make use of this new environment. % gain
 
 \end{description}
