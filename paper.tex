@@ -176,7 +176,8 @@ In the following, each stage of the execution is further described.
   \item \textbf{Script} executes the commands with one or multiple (potentially parallel) applications to run sequentially.
   During the creation of the script, Cylc has included variables that describe the task in the workflow.
   The information is typically fed into the application(s) representing the task, and so defines the storage location.
-  The user script may use commands to generate filenames considering the cycle and may store data in a workflow-specific shared directory.
+  The script uses commands to generate filenames considering the cycle and may store data in a workflow-specific shared directory.
+  Either these commands are set in the Cylc workflow and then injected as environment variables or directly utilised as part of a user-provided script.
 
   \item \textbf{Application} is executed taking the filenames set by the script.
 \end{enumerate}
