@@ -349,7 +349,7 @@ In the example, Task\,1 needs two datasets to perform its work, produces Product
 For each new cycle, the \texttt{checkpoint} from the previous cycle (Product\,1) is used as input to starting the next cycle.
 Most of the workflow can run automatically, except for the manual quality control of the products and the final data usage of Product\,3.
 This last step represents the typical uncertainty of data reuse, i.e., it is unclear how Product\,3 will be used further.
-In the approach proposed in this work, each task is annotated with the required input datasets and the generated products must include metadata such as data life cycle information, value of data, and how long it should be kept.
+In the approach proposed in this work, each task is annotated with the required input datasets and the generated products must include metadata such as data life cycle information, the value of data, and how long it should be kept.
 The idea here is to embrace the concept that tasks dependencies are really imposed by datasets dependencies.
 
 \fig{width=0.8\columnwidth}{pic/workflow-s3-n}{Example of a high-level workflow with tasks and data dependencies}
@@ -387,7 +387,7 @@ For instance, in \cref{pic/workflow-s3-n}, alternating the storage location for 
 However, currently, that implies providing scripts for that task and all tasks depending on the data with information about the different storage placement.
 %Next, we exemplify three situations in which data placement can be optimised.
 
-\item[Data Migration] is the process of transferring data from one storage system to another; typically this involves to delete the data but this decision can be delayed to provide read access on multiple storage systems.
+\item[Data Migration] is the process of transferring data from one storage system to another. Typically, it involves to delete the data, but this decision can be delayed to provide read access to multiple storage systems.
 Data movement involves a significant overhead as data must be read on one storage and written to another, both in terms of latency and energy-efficient computing, hence needs to be considered carefully.
 \cref{fig:lifecycle} introduces three possible life cycles for a specific dataset and explains how migrations can be done to improve datasets accessibility.
 In \cref{fig:lifecycle1}, the dataset could be first stored on the \texttt{local} storage to avoid congestion on the \texttt{work} file system, then be migrated to \texttt{work} file system where subsequent tasks of the workflow may read it multiple times.
@@ -637,14 +637,13 @@ Ultimately, when a user-script runs, the information about the intended I/O sche
 
 The steps to execute a workflow enriched with I/O information and perform smarter scheduling is depicted in \cref{pic/stages-io}.
 The suggested alterations can be seen in boxes pointed by red arrows, and the remaining components are the current state-of-the-art for workflows in climate and weather from \cref{pic/stages}.
-
 In the following, we describe the modifications we propose in this vision paper for each component involved in the software stack.
 
 \fig{width=0.7\columnwidth}{pic/stages-io}{Software stack and stages of execution with the I/O-aware scheduler (EIOS)}
 
 \begin{enumerate}
 
-  \item \textbf{Scientist} The user now has to provide an additional file that covers the I/O information for each task and slightly changes have to be made to the current scripts.
+  \item \textbf{Scientist} The user now has to provide an additional file that covers the I/O information for each task and slight changes have to be made to the current scripts.
 
   \item \textbf{Cylc} EIOS is invoked by Cylc to identify potential optimisations in the schedule before generating the Slurm script.
 
@@ -666,7 +665,7 @@ In the following, we describe the modifications we propose in this vision paper 
   Also, if migrations have to be performed, Slurm will administer them according to the specification in the job script.
 
   \item \textbf{Job}
-  A job might run on the same node than a previous job to utilise local storage.
+  A job might run on the same node as a previous job to utilise local storage.
   %\bnl{Any interesting that needs this performance is running on dozens if not hundreds of nodes}
 
   \item \textbf{Script}
