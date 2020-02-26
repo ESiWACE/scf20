@@ -114,7 +114,7 @@ Our approach intends to reduce the burden on researchers and, at the same time, 
 This paper is structured as follows.
 First, we describe the software stack involved in executing workflows in climate and weather in \Cref{sec:workflows}.
 Related work in heterogeneous storage environments and solutions for workflow processing are presented in \Cref{sec:art}.
-Next, the vision for including knowledge about data requirements and characteristics \lr{data requirements and characteristics == data management?} is sketched in \Cref{sec:vision} outlining the potential benefit the automatic exploitation might bring.
+Next, the vision for including knowledge about data requirements and characteristics is sketched in \Cref{sec:vision} outlining the potential benefit the automatic exploitation might bring.
 Our design, based on existing components in climate and weather, is described in \Cref{sec:design}.
 The paper is concluded in \Cref{sec:conclusions}.
 
@@ -178,14 +178,12 @@ In the following, each stage of the execution is further described.
   The information is typically fed into the application(s) representing the task, and so defines the storage location.
   The user script may use commands to generate filenames considering the cycle and may store data in a workflow-specific shared directory.
 
-  \item \textbf{Application} is executed taking the generated filenames set by the script.
+  \item \textbf{Application} is executed taking the filenames set by the script.
 \end{enumerate}
 
 \subsection{I/O Stack of a Parallel Application}
 
 % \fig{width=0.2\textwidth}{pic/layers-xios}{I/O path for an MPI-parallel application}
-
-\lr{Figs 3 and 4 together as an option.}
 
 \begin{figure}[b]
     \begin{minipage}{.42\linewidth}
@@ -199,7 +197,7 @@ In the following, each stage of the execution is further described.
         \subcaption{Example of an heterogeneous HPC landscape}\label{pic/system}
     \end{minipage}
     \vspace{5pt}
-    \caption{I/O stack and data centre infrastructure}
+    \caption{Typical hardware and software environment for applications}
     \label{fig:34}
 \end{figure}
 
@@ -326,9 +324,7 @@ We aim for achieving an automatic and dynamic mapping of I/O resources to workfl
 Once we have an automated decision about where the job will run and how the storage will be managed, scientists can then reuse their workflow specification on any system without further modification and even without previous knowledge about the system architecture.
 
 There are several approaches to implement the technology for the vision proposed in this work, and changes are needed in the software components to realise it.
-In the next sections, we will discuss a specific design for our transitional roadmap considering climate and weather workflows and tools scientists from this field already use in their routine research.
-
-\lr{"a specific design" here? Next section, no?}
+In \Cref{sec:design}, we will discuss a specific design for our transitional roadmap considering climate and weather workflows and tools scientists from this field already use in their routine research.
 
 Our vision for I/O-aware workflows requires two additional pieces of information.
 Firstly, the user must augment the workflow description with information about I/O requirements and explicitly annotate dependencies to datasets.
@@ -340,7 +336,7 @@ While many optimisations are possible once an abstraction is in place, the impro
 To achieve that, the system information shall comprise of all available storage systems, the system topology, and details of each of the required components.
 Simplified and complex models of the components can be included to approximate expected performance for specific I/O patterns.
 It is expected that the data centre (or expert users) can create such a configuration file, e.g., by using vendor-provided information or by executing benchmarks.
-With this information, a scheduler can make data placement, transformation, and migration decisions for individual datasets during their life cycle.\lr{The scheduler making data transformation? And it's migration already classified as data placement?}
+With this information, a scheduler can make the initial data placement, transformation, and migration decisions for individual datasets during their life cycle.
 This separation of concerns allows us to abstract from the workflow what is essential and what a system should optimise to ensure smart usage of the available resources.
 
 \subsection{Extended Workflow Description}
@@ -388,13 +384,11 @@ Because there is one script responsible for generating the configuration, the de
 Such configuration is done manually and with restricted information about the system architecture.
 It would be interesting to explore storage options for the datasets and, e.g., having datasets from different cycles placed at different storage systems.
 For instance, in \cref{pic/workflow-s3-n}, alternating the storage location for Product\,2 into two scratch file systems is something that would be a simple job for an I/O-aware scheduler.
-However, currently, that implies having at least two scripts for that task with information about the different storage placement.
+However, currently, that implies providing scripts for that task and all tasks depending on the data with information about the different storage placement.
 %Next, we exemplify three situations in which data placement can be optimised.
 
-\lr{Weak justification. We are better than that.}
-
-\item[Data Migration] is the process of transferring data from one storage system to another.
-Data movement involves a significant overhead, both in terms of latency and energy-efficient computing, hence needs to be considered carefully.
+\item[Data Migration] is the process of transferring data from one storage system to another; typically this involves to delete the data but this decision can be delayed to provide read access on multiple storage systems.
+Data movement involves a significant overhead as data must be read on one storage and written to another, both in terms of latency and energy-efficient computing, hence needs to be considered carefully.
 \cref{fig:lifecycle} introduces three possible life cycles for a specific dataset and explains how migrations can be done to improve datasets accessibility.
 In \cref{fig:lifecycle1}, the dataset could be first stored on the \texttt{local} storage to avoid congestion on the \texttt{work} file system, then be migrated to \texttt{work} file system where subsequent tasks of the workflow may read it multiple times.
 In the end, this dataset may be an intermediate product that can then be deleted.
@@ -427,18 +421,15 @@ For the last two scenarios, subsequent tasks would have to be placed on the same
     \label{fig:lifecycle}
 \end{figure}
 
-\lr{If we are really migrating, why do we have to deletes in (a) and (c)? Maybe the delete should appear at the same time as the migration in the timeline.}
-
 \item[Data Replication] in computing involves sharing information to ensure consistency between redundant resources, such as software or hardware components, to improve reliability, fault-tolerance, or accessibility.
 Data might be replicated by enabling the system to rerun parts of the workflow in case of a data loss.
-In addition, the system may combine the replication of data by \textbf{transforming} the data into a different representation allowing to achieve better performance for a variety of access patterns. \lr{Talk about ESDM!}
+In addition, the system may combine the replication of data by \textbf{transforming} the data into a different representation allowing to achieve better performance for a variety of access patterns.
 
 \item[Direct-Coupling] replaces I/O by communicating data between subsequent steps of a workflow directly without storing intermediate data products on persistent storage.
 As an example, in \cref{pic/workflow-s3-n}, the outcome of Task\,1 may be used directly by Task\,2.
-To achieve decoupling\lr{Decoupling in the direct-coupling session? Confusing to me.} between producer and consumer, data may also be kept in memory and cached.
+To achieve some level of independence between producer and consumer, data may also be kept in memory and cached.
 \end{description}
 
-\lr{We talked about balancing the text for each item. I think there was no time for it, right?}
 
 \paragraph{Strategy: Data Reduction.}
 
@@ -494,8 +485,7 @@ To automatically make scheduling decisions, the software stack needs to:
 
 \item Deliver information about dataset life cycle together with the workflow, and
 
-\item Adapt the resulting workflow, individual scripts and application executions to consider the potential for data placement and migration.\lr{data placement and migration again.}
-
+\item Adapt the resulting workflow, individual scripts and application executions to consider the potential for data placement.
 \end{enumerate}
 
 \subsection{System Information}
@@ -654,7 +644,7 @@ In the following, we describe the modifications we propose in this vision paper 
 
 \begin{enumerate}
 
-  \item \textbf{Scientist} The end-user \lr{Is the end-user the scientist?} now has to provide an additional file that covers the I/O information for each task and slightly changes have to be made to the current scripts (discussed above).\lr{Where? I'm lost again. Do we change anything in the original scripts that the user has to provide? He has to provide an additional file and then everything will be under our control, no? The scripts will change, but not by the user, by EIOS.}
+  \item \textbf{Scientist} The user now has to provide an additional file that covers the I/O information for each task and slightly changes have to be made to the current scripts.
 
   \item \textbf{Cylc} EIOS is invoked by Cylc to identify potential optimisations in the schedule before generating the Slurm script.
 
@@ -678,7 +668,6 @@ In the following, we describe the modifications we propose in this vision paper 
   \item \textbf{Job}
   A job might run on the same node than a previous job to utilise local storage.
   %\bnl{Any interesting that needs this performance is running on dozens if not hundreds of nodes}
-  \lr{Only that might happen?}
 
   \item \textbf{Script}
   Filenames are now generated by a replacement command that calls EIOS to create a pseudo filename.
@@ -688,10 +677,8 @@ In the following, we describe the modifications we propose in this vision paper 
   The application may either use XIOS, NetCDF with ESDM support or ESDM directly to access datasets.
   Hence, in \cref{pic/layers-xios}, the HDF5 layer is replaced with ESDM.
   ESDM loads the \texttt{esdm.conf} file that contains the information about the available storage backends and their characteristics.
-  ESDM extracts the long-term schedule information from the generated pseudo filenames and employs it during the I/O scheduling to optimise the storage considering data locality between tasks.\lr{Is that really the only thing we are exploring?}
-
-  \lr{In this happening in the application level? Not before slurm? I'm confused now.}
-
+  ESDM extracts the long-term schedule information from the generated pseudo filenames and employs it during the I/O scheduling to optimise the storage considering data locality between tasks.
+  Basically, ESDM can now change the priorities for data placement of the different storage locations that would normally be encoded in its configuration file.
 \end{enumerate}
 
 \section{Conclusions}
