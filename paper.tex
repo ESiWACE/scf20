@@ -171,7 +171,7 @@ In the following, each stage of the execution is further described.
 %  The job sets environment variables containing information about the environment of the batch job, e.g., the compute nodes allocated, and then enacts the Cylc provided script on one node.
 
   \item \textbf{Job} provides the environment with the resources and it runs the user-provided program or script on one of the nodes allocated for it.
-  Local variables containing information about the environment of the batch job, e.g., the compute nodes allocated, and then enacts the Cylc provided script on one node.
+  Local variables containing information about the environment of the batch job, e.g., the compute nodes allocated, enacts the Cylc provided script on the node.
 
   \item \textbf{Script} executes the commands with one or multiple (potentially parallel) applications to run sequentially.
   During the creation of the script, Cylc has included variables that describe the task in the workflow.
@@ -259,7 +259,7 @@ Policy-driven systems and burst-buffers perform such optimisations automatically
 
 Related work can be categorised into:
 1) Technology that exploits heterogeneous storage environments and supports user-directed policies and
-2) Solutions for workflow processing.
+2) Solutions for workflow processing.\\
 
 \textbf{Technology.}
 Manual tiering requires the user or application to control the data placement, i.e., storing data typically in the form of files on a particular storage system and, usually, moving data between storage by scripts.
@@ -275,9 +275,9 @@ The storage community had also adjusted various higher-level software to support
 Hermes~\cite{kougkas2020acceleration} provides a multi-tiered I/O buffering system with pre-fetcher that provides several data placement policies.
 iRODS~\cite{rajasekar2010irods} is a rule-oriented data system that allows scientists to organise data into shareable collections and provides several patterns for workflows considering data locality and data migration/replication.
 % and provide metadata such as the data life cycle.
-Finally, there have also been extensions to batch schedulers to perform data staging for utilising node-local storage, for example, NORNS~\cite{miranda2019norns} as an extension to Slurm.
+Finally, there have also been extensions to batch schedulers to perform data staging for utilising node-local storage, for example, NORNS~\cite{miranda2019norns} as an extension to Slurm.\\
 
-\smallskip
+%\smallskip
 
 \textbf{Workflows. }
 A good overview of the flavours of Scientific Workflow Management Systems (SWfMS) and their application to data-intensive workflows is given in \cite{liu2015survey}.
@@ -500,7 +500,9 @@ In the example presented in \Cref{lst:esdm.conf}, we have three storage targets:
 Each of them comes with a lightweight performance model and the maximum size of data fragments.
 The metadata section (Line 24) utilises here a POSIX interface to store the information about the ESDM objects. Internally, ESDM creates so-called containers and dataset objects to manage data fragments.
 
-\begin{lstlisting}[caption = Example of an ESDM configuration file (\texttt{esdm.conf}), label=lst:esdm.conf]
+\begin{figure}[!ht]
+
+\begin{lstlisting}
 "backends": [
     {"type": "POSIX", "id": "work1", "target": "/work/lustre01/projectX/",
         "performance-model" : {"latency" : 0.00001, "throughput" : 500000.0},
@@ -531,6 +533,10 @@ The metadata section (Line 24) utilises here a POSIX interface to store the info
     }
 \end{lstlisting}
 
+\caption{Example of an ESDM configuration file (\texttt{esdm.conf})}
+\label{lst:esdm.conf}
+\end{figure}
+
 %\hh{Here I have similar question: we need an extended and new configuration file, which includes characteristics of inputs/outputs dataset. As Julian said above, we can not added these items directly into Cylc configuration because Cylc wouldn't understand it. But you see, it's a burden to have another conf file. It is error-prune, and duplicated information may cause inconsistency. I propose to have these information added to the same Cylc configuration file, but in special comments. These comments will be omitted by Cylc, but they can be parsed by ESDM. This is similar for Doxygen comments in C/Java source file, or the leading line of a shell script, etc.}
 %\jk{Good suggestion! That absolutely depends how a Cylc file is parsed and analysed. Keeping it separately gives us the most flexibility and parsing comments could lead to misinterpreting already existing comments and acting wrongly. Still to consider.}
 
@@ -552,7 +558,9 @@ While the current system information and performance model are based on latency 
 The user now has to provide information about datasets required for input and the generated output for each workflow task in a separate file similarly to Cylc's workflow configuration file.
 An example of an I/O-workflow configuration file (\texttt{io.cylc}) is shown in \Cref{lst:cylc}. In this file, information about Task\,1 is given by example, and we expect the extra information about all tasks in the same file. Ultimately, this could be integrated into the workflow specification file of Cylc.
 
-\begin{lstlisting}[caption = External Cylc I/O-workflow configuration file (\texttt{io.cylc}), label=lst:cylc]
+\begin{figure}[!ht]
+
+\begin{lstlisting}
 [Task 1]
   [[inputs]]
     topography = "/pool/input/app/config/topography.dat"
@@ -580,6 +588,10 @@ An example of an I/O-workflow configuration file (\texttt{io.cylc}) is shown in 
       datatype = text
       size = small
 \end{lstlisting}
+
+\caption{External Cylc I/O-workflow configuration file (\texttt{io.cylc})}
+\label{lst:cylc}
+\end{figure}
 
 %In this example, the workflow file could define a cycle flexibly to be a month or a year according to the Cylc workflow file.
 In this example, the \texttt{io.cylc} file could define a cycle flexibly to be a month or a year according to the \texttt{flow.cylc} file.
@@ -650,7 +662,7 @@ In the following, we describe the modifications we propose in this vision paper 
 
   \item \textbf{Cylc} EIOS is invoked by Cylc to identify potential optimisations in the schedule before generating the Slurm script.
 
-  \item \textbf{\color{red}{EIOS}} The ESDM I/O Scheduler reads the information about the workflow (\texttt{flow.cylc} and \texttt{io.cylc} configuration files) and acts depending on the stage of the execution.
+  \item \textbf{EIOS} The ESDM I/O Scheduler reads the information about the workflow (\texttt{flow.cylc} and \texttt{io.cylc} configuration files) and acts depending on the stage of the execution.
   EIOS consists of several subcomponents:
     \begin{itemize}
 
@@ -683,7 +695,7 @@ In the following, we describe the modifications we propose in this vision paper 
   Basically, ESDM can now change the priorities for data placement of the different storage locations that would normally be encoded in its configuration file.
 \end{enumerate}
 
-\section{Conclusions}
+\section*{Conclusions}
 \label{sec:conclusions}
 
 In the domain of climate and weather, organising the data placement on storage tiers is performed by the users or via policies, often leading to suboptimal decisions.
