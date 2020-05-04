@@ -171,7 +171,7 @@ In the following, each stage of the execution is further described.
 %  The job sets environment variables containing information about the environment of the batch job, e.g., the compute nodes allocated, and then enacts the Cylc provided script on one node.
 
   \item \textbf{Job} provides the environment with the resources and it runs the user-provided program or script on one of the nodes allocated for it.
-  Local variables containing information about the environment of the batch job, e.g., the compute nodes allocated, enacts the Cylc provided script on the node.
+  Local variables contain information about the environment of the batch job, e.g., the compute nodes allocated, and they enact the Cylc provided script on the node.
 
   \item \textbf{Script} executes the commands with one or multiple (potentially parallel) applications to run sequentially.
   During the creation of the script, Cylc has included variables that describe the task in the workflow.
