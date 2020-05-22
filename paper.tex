@@ -421,12 +421,9 @@ Even more, if the system characteristics change, e.g., it gets upgraded, an addi
 
 This section describes our first approach to incrementally extend workflows for climate and weather that realises parts of our vision.
 While individual components such as ESDM and Cylc exist, we have not implemented the described scheduler, yet.
-To automatically make scheduling decisions, the software stack needs to:
-
+To automatically make scheduling decisions, the software stack needs to: \vspace{0.3cm}
 \begin{enumerate}
-
 \item Deliver information about dataset life cycle together with the workflow, and
-
 \item Adapt the resulting workflow, individual scripts and application executions to consider the potential for data placement.
 \end{enumerate}
 
@@ -581,15 +578,15 @@ Our design imposes only minor changes to Cylc as the core requirements are cover
 \ \\ \vspace{-0.5cm}
 
 This will be achieved by calling an external command (run on the Cylc scheduler host) which adds additional directives to be used by the job.
-This command provided by EIOS will determine some attributes of previous tasks through simple SQL queries to the Cylc database.
+This command, provided by EIOS, will determine some attributes of previous tasks through simple SQL queries to the Cylc database.
 We plan on using the Cylc broadcast functionality to change the directives used by a task by running an external program prior to any task where we need to be able to alter the directives.
 
 \item[The ability to dynamically set storage locations]
 
 \ \\ \vspace{-0.5cm}
 
-This will be achieved by defining environment variables in the job script which are set to the output of another external command.
-This command provided by EIOS and run on the job host will have access to all the normal Cylc environment variables providing details about the current task.
+This will be achieved by defining environment variables in the job script which are set to the output of another external command (run on the job host).
+This command, provided by EIOS, will have access to all the normal Cylc environment variables providing details about the current task.
 \end{description}
 
 We plan on utilising DDN's IME API to pin data in IME and to trigger migrations between IME and a storage backend explicitly.
