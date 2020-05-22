@@ -572,7 +572,7 @@ These goals will be achieved via the proposed I/O-aware scheduler, called here E
 EIOS will make the schedule considering Cylc workflow, and ESDM provided system characteristics.
 Components of it are involved in different steps of the workflow and the I/O path.
 While Cylc schedules the workflow, EIOS can provide hints about colocating tasks which provide the opportunity for keeping data in local storage.
-There are two main requirements from Cylc, both covered by Cylc normal functionalities:
+Our design imposes only minor changes to Cylc as the core requirements are covered by normal functionalities:
 
 \begin{description}
 
@@ -580,14 +580,16 @@ There are two main requirements from Cylc, both covered by Cylc normal functiona
 
 \ \\ \vspace{-0.5cm}
 
-This will be achieved by calling an external command (run on the Cylc scheduler host) which defines directives to be used by the job. This external command will determine some attributes of previous tasks through simple SQL queries to the Cylc database. We plan on using Cylc broadcast to alter the directives used by a task by running an extra local task prior to any task where we need to be able to alter the directives.
+This will be achieved by calling an external command (run on the Cylc scheduler host) which adds additional directives to be used by the job.
+This command provided by EIOS will determine some attributes of previous tasks through simple SQL queries to the Cylc database.
+We plan on using the Cylc broadcast functionality to change the directives used by a task by running an external program prior to any task where we need to be able to alter the directives.
 
 \item[The ability to dynamically set storage locations]
 
 \ \\ \vspace{-0.5cm}
 
-This will be achieved by defining environment variables in the job script which are set to the output of another external command. This external command (run on the job host) will have access to all the normal Cylc environment variables providing details about the current task.
-
+This will be achieved by defining environment variables in the job script which are set to the output of another external command.
+This command provided by EIOS and run on the job host will have access to all the normal Cylc environment variables providing details about the current task.
 \end{description}
 
 We plan on utilising DDN's IME API to pin data in IME and to trigger migrations between IME and a storage backend explicitly.
