@@ -61,7 +61,7 @@ The efficient, convenient, and robust execution of data-driven workflows and enh
 In HPC, the concerns of storage and computing are traditionally separated and optimised independently from each other and the needs of the end-to-end user. However, in complex workflows, this is becoming problematic. These problems are particularly acute in climate and weather workflows, which as well as become increasingly complex and exploiting deep storage hierarchies, can involve multiple data centres.
 
 The key contributions of this paper are:
-1) A sketch of a vision for an integrated data-driven approach, with a discussion of the associated challenges and implications, and 2) An architecture and roadmap consistent with this vision that would allow seamless integration into current climate and weather workflows as it utilises versions of existing tools (Cylc, XIOS, DDN IME, and ESDM).
+1) A sketch of a vision for an integrated data-driven approach, with a discussion of the associated challenges and implications, and 2) An architecture and roadmap consistent with this vision that would allow seamless integration into current climate and weather workflows as it utilises versions of existing tools (Cylc, XIOS, DDN's IME, and ESDM).
 
 The vision proposed here is built on the belief that workflows composed of data, computing, and communication-intensive tasks should drive interfaces and hardware configurations to best support the programming models.
 When delivered, this work will increase the opportunity for smarter scheduling of computing by considering storage in heterogeneous storage systems.
@@ -234,7 +234,7 @@ Manual tiering requires the user or application to control the data placement, i
 One limitation of such an approach is that decisions about how data are mapped and packaged into files are made by the producing application, and cannot be changed without manual intervention by a downstream application.
 
 Burst buffer solutions provide a tiered storage system that aims to exploit a storage hierarchy.
-They can be integrated into hardware capabilities such as DDN IME~\cite{BODIAIFSFI19} or simple software solutions.
+They can be integrated into hardware capabilities such as DDN's Infinite Memory Engine (IME)~\cite{BODIAIFSFI19} or simple software solutions.
 A policy system, e.g., deployed on a burst buffer~\cite{RomanusRP15}, aims to simplify the data movement for the user, but typically migrates objects in the coarse granularity of files.
 File systems and data management software such as IBM Spectrum Scale~\cite{SchmuckH02}, HPSS~\cite{528214}, BeeGFS~\cite{beegfs}, and Lustre~\cite{abs-1903-01955} (e.g., using the progressive file layouts feature) provide hierarchical storage management allowing to store data on different storage technology according to administrator-provided policies.
 However, the semantic information that can be used by this type of system to make decisions is limited, e.g., data location, file extension, age of the file, etc.
@@ -537,6 +537,7 @@ Most data is input and output in the periodicity of the cycle, except for \textt
 Next, we formally define the expected annotations in all the fields expected in the I/O-workflow configuration file:
 
 \begin{description}[itemsep=0pt]
+
   \item[Name] A basic name for the field/data generated. It is extended by a pattern defined in a variable (Lines: 8, 16, 23).
 
   \item[Pattern] The frequency the data is output (Lines: 9, 17).
@@ -569,12 +570,28 @@ From the list of opportunities, we realise data placement and migration in a het
 These goals will be achieved via the proposed I/O-aware scheduler, called here EIOS (ESDM I/O Scheduler).
 EIOS will make the schedule considering Cylc workflow, and ESDM provided system characteristics.
 Components of it are involved in different steps of the workflow and the I/O path.
-
 While Cylc schedules the workflow, EIOS can provide hints about colocating tasks which provide the opportunity for keeping data in local storage.
+There are two main requirements from Cylc, both covered by Cylc normal functionalities:
+
+\begin{description}
+
+\item[The ability to dynamically set the job (Slurm) directives for a task]
+
+\ \\ \vspace{-0.5cm}
+
+This will be achieved by calling an external command (run on the Cylc scheduler host) which defines directives to be used by the job. This external command will determine some attributes of previous tasks through simple SQL queries to the Cylc database. We plan on using Cylc broadcast to alter the directives used by a task by running an extra local task prior to any task where we need to be able to alter the directives.
+
+\item[The ability to dynamically set storage locations]
+
+\ \\ \vspace{-0.5cm}
+
+This will be achieved by defining environment variables in the job script which are set to the output of another external command. This external command (run on the job host) will have access to all the normal Cylc environment variables providing details about the current task.
+
+\end{description}
+
+We plan on utilising DDN's IME API to pin data in IME and to trigger migrations between IME and a storage backend explicitly.
 Decisions about data locality will not be made for a whole (and potentially big) workflow.
 Instead, the system will make decisions by looking ahead to several steps of the workflow, allowing reacting to the observed dynamics of the execution.
-We utilise DDN's IME API to pin data in IME and to trigger migrations between IME and a storage backend explicitly.
-
 Ultimately, when a user-script runs, the information about the intended I/O schedule is communicated from EIOS through a modified filename, which is then used by the ESDM-aware application to determine the data placement.
 
 \subsection{Modified Workflow Execution}
