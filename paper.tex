@@ -42,10 +42,6 @@
     upquote=true
 }
 
-\newcommand{\jk}[1]{\todo[inline]{JK: #1}}
-\newcommand{\lr}[1]{\textcolor{cyan}{LR: #1}}
-\newcommand{\hh}[1]{\textcolor{blue}{HuangHua: #1}}
-\newcommand{\bnl}[1]{\textcolor{green}{BNL: #1}}
 \pagestyle{plain}
 
 % ------------
@@ -82,17 +78,7 @@ High-Performance Computing (HPC) harnesses the fastest available hardware compon
 Typical use-cases include numerical simulation of physical systems and analysis of large-scale observational data.
 In the domain of climate and weather, there is a considerable demand for the orchestration of ensembles of simulation models and the generation of data products.
 A service such as the operational weather forecast workflow in Met Office writes around 200\,TB and reads around 600\,TB every day.
-%For a typical Met Office Unified Model (UM) from the Coupled Model Intercomparison Project (CMIP) run, some %rough estimates of data volumes are:
-%\begin{itemize}
-%\item N96-ORCA1 -- 200Gb per model year
-%\item N216-ORCA025 -- 700Gb per model year
-%\end{itemize}
-%Historical data spans over 170 years, generating 34Tb for low resolution and 119Tb for high resolution, while %projections will generate approximately half of this.
 In total, at the Met Office, on average 1.5\,PB and 14\,PB are written and read per day, respectively, for all climate and weather forecasts across all HPC clusters.
-%The above supports the view of how vital data management already is, and these numbers will grow with resolution and more ensembles.
-%Existing climate experiments do ensemble experiments sequentially as few institutions have resources for parallel climate ensembles.
-%That's an exascale use case requiring not only a big machine but the ability to schedule big jobs.
-%\lr{I don't quite understand the numbers.}
 
 Based on the needs of climate and weather researchers, the HPC community has developed a software ecosystem that supports scientists to execute their large-scale workflows.
 While the current advances correspond to a big leap forward, many processes still require experts.
@@ -101,8 +87,6 @@ For example, porting a workflow from one system to another still requires adjust
 Since performance is of crucial importance to large-scale workflows, careful attention must be paid to exploit the system characteristics of the target computing centre.
 For instance, a data-driven workflow may benefit from the explicit and simultaneous use of a locally heterogeneous set of computing and storage technologies.
 This means that substantial changes may be required to a workflow to tailor it to a particular supercomputer environment in order to obtain the best performance.
-
-%For example, porting a workflow from one system to another still requires adjusting runtime parameters of applications and deciding on how data is managed.}
 
 Knowing the capabilities, interfaces, and performance characteristics of individual components are mandatory to make the best use of them.
 As the complexity of systems expands and alternative storage and computing technologies provide unique characteristics, it becomes increasingly difficult even for experts to manually optimise the usage of resources in workflows. In many cases, modifications are not performed because: 1) They are labour intense: any change to the workflow requires careful validation which may not pay off for small scale runs; 2) It is a one-time explorative workflow and, 3) Users are not aware of the potential of the complex system.
@@ -126,21 +110,17 @@ In this section, we describe how workflows are executed in a typical software st
 \subsection{Cylc}
 
 Cylc~\cite{8675433} is in charge of executing and monitoring cyclic workflows in which each step is submitted to the batch scheduler of a data centre.
-%Cylc development began in 2008 in response to deficiencies of existing NWP workflow schedulers related to the creation of a single never-ending workflow rather than a never-ending sequence of single-cycle workflows.
-%With the current techniques, the evolution of the workflow could be a significant impediment
 With Cylc, tasks from multiple cycles may be able to run concurrently without violating dependencies, preventing the issue of delays that cause one cycle to run into another.
 Cylc was written in Python and built around a new scheduling algorithm that can manage infinite workflows of cycling tasks without a sequential cycle loop.
 At any point during workflow execution, only the dependence between the individual tasks matters, regardless of their particular cycle points.
 The information Cylc uses to control a given workflow is the task dependency.
 In a script file, the developers define, for each task, the parallelism settings and where the data is to be stored.
-%Decisions about storage must take into consideration the system architecture and the relevance of heterogeneous infrastructure in which the workflow will run.
 
 \fig{width=0.8\columnwidth}{pic/cylc1}{Example of a Cylc workflow with its configuration file}
 
 Consider the Cylc workflow for a toy monthly cycling workflow in \cref{pic/cylc1}.
 In this workflow, an atmospheric model (labelled as \texttt{model} in the figure) simulates the physics from a current state to predict the future, for example, a month later.
 In climate research, this process is repeated in the model to simulate years into the future.
-% Once the simulation of any month is computed, this task completes and implicitly the data for this month becomes available and can now be analysed.
 Once the simulation of any month is computed, the data for this month becomes available and can now be analysed.
 In this workflow, the task \texttt{model} is followed by tasks postprocessing (\texttt{post}), forecast verification (\texttt{ver}), and product generation (\texttt{prod}), all specified as a workflow in a Cylc configuration file (\texttt{flow.cylc}).
 
@@ -148,7 +128,6 @@ In this workflow, the task \texttt{model} is followed by tasks postprocessing (\
 
 While Cylc is directing the execution of workflows, several components are presented in the implementation.
 The software stack involved in a general workflow is depicted in \cref{pic/stages}.
-%As a preliminary, the user has to specify a configuration representing the Cylc workflow and provide scripts for the individual tasks/applications to be executed.
 In the following, each stage of the execution is further described.
 
 \fig{width=0.7\textwidth}{pic/stages}{Software stack and stages of execution}
@@ -163,12 +142,8 @@ In the following, each stage of the execution is further described.
   Once a task can be executed (dependencies are fulfilled), the workflow engine submits a \textit{job script} for the workload manager with the required metadata that will run the Cylc task script.
 
   \item \textbf{Workload Manager} such as Slurm~\cite{Jette02slurm:simple} is responsible for allocating compute resources to a batch job and performing the job scheduling.
-%  In our case, it now queues the job that represents the Cylc task and plans its execution, considering the scheduling policy of the data centre.
   The selected tool queues the job that represents the Cylc task and plans its execution, considering the scheduling policy of the data centre.
   Once the job is scheduled to be dispatched, i.e., resources are available, and the job priority is the highest, it is started on the supercomputer.
-
-%  \item \textbf{Job} provides the environment with the resources it runs the user-provided script on one of the nodes allocated for the job.
-%  The job sets environment variables containing information about the environment of the batch job, e.g., the compute nodes allocated, and then enacts the Cylc provided script on one node.
 
   \item \textbf{Job} provides the environment with the resources and it runs the user-provided program or script on one of the nodes allocated for it.
   Local variables contain information about the environment of the batch job, e.g., the compute nodes allocated, and they enact the Cylc provided script on the node.
@@ -180,11 +155,10 @@ In the following, each stage of the execution is further described.
   Either these commands are set in the Cylc workflow and then injected as environment variables or directly utilised as part of a user-provided script.
 
   \item \textbf{Application} is executed taking the filenames set by the script.
+
 \end{enumerate}
 
 \subsection{I/O Stack of a Parallel Application}
-
-% \fig{width=0.2\textwidth}{pic/layers-xios}{I/O path for an MPI-parallel application}
 
 \begin{figure}[b]
     \begin{minipage}{.42\linewidth}
@@ -201,9 +175,6 @@ In the following, each stage of the execution is further described.
     \caption{Typical hardware and software environment for applications}
     \label{fig:34}
 \end{figure}
-
-% In our example, we assume the application is parallelised for performance reasons using MPI.
-% Not just for performance reasons, it's about making enough memory too, so removed qualification.
 
 Climate applications may have complex I/O stacks, as can be seen in \cref{pic/layers-xios}.
 In this case, we assume the application uses XIOS~\cite{xios}, which is providing domain-specific semantics to climate and weather.
@@ -233,10 +204,7 @@ Future centres are expected to have even more heterogeneity. A variety of accele
 \cref{pic/system} shows such a system with a focus on computation and storage.
 Some of these technologies might be local to specific compute nodes or globally available.
 Depending on the need, the storage characteristics range from predictable low-latency (in-memory storage, NVMe) to online storage (SSD, HDD), and cheap storage for long-term archival (tape).
-% Burst buffer solutions provide a tiered storage system that aims to exploit a storage hierarchy. % (\url{https://www.ddn.com/products/ime-flash-native-data-cache/})
 The tasks within any given workflow could benefit from utilising different combinations of storage and computing infrastructure.
-
-% \fig{width=0.6\columnwidth}{pic/system}{Example of an heterogeneous HPC landscape}
 
 \subsection{Data Management}
 \label{sec:datamanagement}
@@ -249,7 +217,7 @@ If a user knows the workflow and the system characteristics, s/he can optimise d
 Consider, for instance, the situation where each computing node has access to three file systems: a fast \texttt{scratch} file system on which data may reside only for a week, a slower \texttt{work} file system, and a \texttt{local} file system.
 Most current workflows utilise \texttt{work} and \texttt{scratch} systems.
 When a task is set to run, the corresponding dataset would be moved from \texttt{work} to \texttt{scratch}, processed, and the resulting dataset would be transferred back to \texttt{work}.
-If the \texttt{scratch} filesystem reaches its capacity, the dataset would be moved back to \texttt{work}, and the task would continue running until it is finished, which might be inefficient. %\texttt{local} is not used.
+If the \texttt{scratch} filesystem reaches its capacity, the dataset would be moved back to \texttt{work}, and the task would continue running until it is finished, which might be inefficient.
 In this situation, there are many obvious opportunities to utilise data migration to optimise performance, and other criteria (e.g., costs).
 However, with a multitude of file systems that differ at each data centre, such optimisations would be difficult to achieve manually by users.
 Policy-driven systems and burst-buffers perform such optimisations automatically to some extent. However, as they lack information about the workflow, they cannot optimise workflows perfectly.
@@ -274,15 +242,11 @@ However, the semantic information that can be used by this type of system to mak
 The storage community had also adjusted various higher-level software to support storage tiering on top of several storage systems. For instance, ADIOS provides in-memory staging that had been exploited by a variety of applications~\cite{slawinska2013maya}.
 Hermes~\cite{kougkas2020acceleration} provides a multi-tiered I/O buffering system with pre-fetcher that provides several data placement policies.
 iRODS~\cite{rajasekar2010irods} is a rule-oriented data system that allows scientists to organise data into shareable collections and provides several patterns for workflows considering data locality and data migration/replication.
-% and provide metadata such as the data life cycle.
 Finally, there have also been extensions to batch schedulers to perform data staging for utilising node-local storage, for example, NORNS~\cite{miranda2019norns} as an extension to Slurm.\\
-
-%\smallskip
 
 \textbf{Workflows. }
 A good overview of the flavours of Scientific Workflow Management Systems (SWfMS) and their application to data-intensive workflows is given in \cite{liu2015survey}.
 The article states that SWfMS should enable the parallel execution of data-intensive scientific workflows and exploit large amounts of distributed resources.
-%"An abstract scientific workflow is defined by the functionality of each activity (or sub-workflow) and data dependencies between activities (or sub-workflows)"
 Existing solutions recognise challenges in data variety (formats of the input data), opportunities to optimise the schedule by moving code to data, allow specifying the data dependencies for tasks, and they even may consider the capacity of the available data storage.
 The execution engine Dryad~\cite{isard2007dryad}, for example, allows transferring data between tasks via files or directly using TCP connections and attempts to schedule tasks on the same nodes or racks.
 Swift/T is a scripting language for describing dataflow processing allowing to execute ensembles of applications~\cite{ozik2016desktop}.
@@ -294,19 +258,6 @@ Various early research in grid workflows and lately cloud use cases attempts to 
 Economic factors (including storage costs) for workflow execution are discussed in \cite{alkhanak2016cost}.
 In \cite{deelman2019role}, the authors discuss the role of Machine Learning (ML) for workflow execution and elaborate a general potential for resource provisionings such as optimisation of runtime parameters, data movements, and hierarchical storage.
 In \cite{subedi2019leveraging}, an ML model that stages data for in-situ analysis by exploiting the access patterns is introduced.
-
-
-%TRIO: Burst Buffer Based I/O Orchestration. In: 2015 IEEE International conference on cluster computing, Chicago, IL, USA, 8–11 September 2015, pp. 194–203. Washington, DC: IEEE.
-%Chervenak, A.L., Smith, D.E., Chen, W., Deelman, E.:
-%Integrating policy with scientific workflow management
-%for data-intensive applications. In: Supercomputing (SC)
-%Companion: High-Performance Computing, Networking
-%Storage and Analysis, pp. 140–149 (2012)
-
-% https://www.sciencedirect.com/science/article/pii/S0167739X14002519
-%Workflow engine for cloud \cite{pandey2011workflow}
-%staging data to an available location just somehow.
-%"storage service provides a temporary repository for application files that is, input files that are required for task execution, and output files that are the result of execution.""
 
 Workflow systems can also be utilised specifically to reproduce scientific results, i.e., recompute the results.
 Those scalable workflow solutions typically utilise a container solution to allow execution in an arbitrary software environment.
@@ -355,10 +306,6 @@ The idea here is to embrace the concept that tasks dependencies are really impos
 
 \fig{width=0.8\columnwidth}{pic/workflow-s3-n}{Example of a high-level workflow with tasks and data dependencies}
 
-%The access to I/O information before the workflow runs can be used to optimise where jobs will be executed and how datasets will be stored during the workflow.
-%This information today is static and manual, leaving open opportunities for automating and optimisations.
-%Once we insert the datasets explicitly in the workflow, it is easier to see that many optimisations regarding storage can be made.
-
 \subsection{Smarter I/O Scheduling}
 
 The abstraction and automation of the I/O inside a workflow allow a runtime system to improve data placement and apply data reduction on heterogeneous storage systems.
@@ -368,14 +315,12 @@ Aspects like data reproducibility (can it be recomputed easily), type of the exp
 Next, we outline the two core strategies and potential the proposed vision can bring to improve current workflows.
 In the design proposed in this work (\cref{sec:design}), we will focus on the data placement strategy.
 
-% \subsubsection{Data Placement}
-
 \paragraph{Strategy: Data Placement.}
 
 Data placement encompasses all data movement-related activities such as transfer, staging, replication, space allocation and de-allocation, registering and unregistering metadata, locating and retrieving data\footnote{https://www.igi-global.com/dictionary/data-aware-distributed-batch-scheduling/6782}.
 The general idea is to host a dataset on the storage system that is most favourable in terms of performance, cost-effectiveness, availability for the access pattern observed in the workflow.
 Here we are considering the optimisation of data locality, where locality is twofold, spatial and temporal on a variety of characteristics.
-For optimising data placement, there are several approaches:%: \textbf{in-memory data}, \textbf{data allocation}, \textbf{data migration}, and \textbf{data replication}.
+For optimising data placement, there are several approaches:
 
 \begin{description}
 
@@ -386,7 +331,6 @@ Such configuration is done manually and with restricted information about the sy
 It would be interesting to explore storage options for the datasets and, e.g., having datasets from different cycles placed at different storage systems.
 For instance, in \cref{pic/workflow-s3-n}, alternating the storage location for Product\,2 into two scratch file systems is something that would be a simple job for an I/O-aware scheduler.
 However, currently, that implies providing scripts for that task and all tasks depending on the data with information about the different storage placement.
-%Next, we exemplify three situations in which data placement can be optimised.
 
 \item[Data Migration] is the process of transferring data from one storage system to another. Typically, it involves to delete the data, but this decision can be delayed to provide read access to multiple storage systems.
 Data movement involves a significant overhead as data must be read on one storage and written to another, both in terms of latency and energy-efficient computing, hence needs to be considered carefully.
@@ -394,12 +338,10 @@ Data movement involves a significant overhead as data must be read on one storag
 In \cref{fig:lifecycle1}, the dataset could be first stored on the \texttt{local} storage to avoid congestion on the \texttt{work} file system, then be migrated to \texttt{work} file system where subsequent tasks of the workflow may read it multiple times.
 In the end, this dataset may be an intermediate product that can then be deleted.
 In \cref{fig:lifecycle2}, the dataset is stored on the \texttt{scratch} file system immediately and accessed there.
-%However, that would require subsequent tasks to be placed on the same node where data is now stored, and the last read access must happen before files on \texttt{scratch} are automatically removed.
 However, the last read access must happen before files on \texttt{scratch} are automatically removed.
 Alternatively, \cref{fig:lifecycle3} presents the case where the dataset is created on \texttt{work} by a task and it is copied to a \texttt{local} node.
 This \texttt{local} node allows reading accesses of subsequent tasks which might be beneficial for small random accesses.
 For the last two scenarios, subsequent tasks would have to be placed on the same node where previous data was stored.
-%However, it would require that the subsequent tasks are placed on the same node where data is now stored.
 
 \begin{figure}[b]
     \begin{minipage}{.33\linewidth}
@@ -431,7 +373,6 @@ As an example, in \cref{pic/workflow-s3-n}, the outcome of Task\,1 may be used d
 To achieve some level of independence between producer and consumer, data may also be kept in memory and cached.
 \end{description}
 
-
 \paragraph{Strategy: Data Reduction.}
 
 Data reduction reduces the amount of data stored.
@@ -444,7 +385,6 @@ Knowing the characteristics of data production and usage makes it simpler for sc
 The storage system can exploit such information by reducing the precision of data and automatically picking an appropriate compression algorithm.
 
 \item[Data Recomputation] Climate/weather scientists are trading recomputation with space usage manually.
-%, in the so-called field space-time trade-off that has been applied in Cryptanalysis for already forty years~\cite{1056220}.
 By knowing how to rerun the workflow behind the data creation, a smarter storage system can automatically trade data availability for potential recomputation opportunities to optimise the cost-efficiency of the system.
 Intermediate states could be rerun by utilising virtualisation and container technologies.
 Consider \cref{pic/workflow-s3-n} again and that, at every \texttt{K} cycles of the workflow, the generated Product\,3 (from Cycle 1 to Cycle \texttt{K}) are used in a validation task, called here \texttt{check}.
@@ -453,8 +393,6 @@ This dataset would probably be stored somewhere, and it will not be used until t
 One alternative is to delete it after it was first used and then recompute it when time is right.
 The cost of doing that is storing \texttt{checkpoint} and then use it to reconstruct $P_3 C_1$.
 If, for instance, $P_3 C_1$ is a large dataset, \texttt{checkpoint} is small, and computing time is short, it is easy to see that deleting and recomputing it may improve the costs of running the workflow.
-%We need, then, information about datasets volume and computing time to be able to make an accurate decision.
-%The bottom line here is: there are situations in which decisions are being made without considering all the available %information and possible scenarios.
 This is just an example, and, currently, scientists perform those optimisations manually.
 \end{description}
 
@@ -473,7 +411,7 @@ In particular, by exposing the heterogeneous architecture, potentially runtime c
 By using information about the value of data, policies for data management (storage resilience,  recomputation, replication, etc.) can be decided.
 
 \item[Performance-portability] With both abstraction and optimisation, the user can specify the I/O requirements only once for the tasks of a specific workflow, and the I/O-aware workflow can now run with optimised data storage on any system without user intervention.
-Even more, if the system characteristics change, e.g., it gets upgraded, an additional storage tier becomes available, or if storage degrades, the I/O-aware workflow could automatically adapt and make use of this new environment. % gain
+Even more, if the system characteristics change, e.g., it gets upgraded, an additional storage tier becomes available, or if storage degrades, the I/O-aware workflow could automatically adapt and make use of this new environment.
 
 \end{description}
 
@@ -494,7 +432,6 @@ To automatically make scheduling decisions, the software stack needs to:
 \subsection{System Information}
 
 ESDM is used as I/O middleware in the parallel application (with NetCDF or directly) and orchestrates the I/O according to a simplified ESDM configuration file (\texttt{esdm.conf}).
-% The information about the system is provided using a simplified ESDM configuration file (\texttt{esdm.conf}) provided by the data centre (or expert users).
 This file contains information about the available technology in the data centre, its I/O characteristics, and will be used to make decisions about how to prioritise I/O targets.
 In the example presented in \Cref{lst:esdm.conf}, we have three storage targets: two global accessible file systems (\texttt{lustre01} and \texttt{lustre02}), and one local file system in \texttt{/tmp} that can be accessed via the POSIX backend.
 Each of them comes with a lightweight performance model and the maximum size of data fragments.
@@ -537,16 +474,9 @@ The metadata section (Line 24) utilises here a POSIX interface to store the info
 \label{lst:esdm.conf}
 \end{figure}
 
-%\hh{Here I have similar question: we need an extended and new configuration file, which includes characteristics of inputs/outputs dataset. As Julian said above, we can not added these items directly into Cylc configuration because Cylc wouldn't understand it. But you see, it's a burden to have another conf file. It is error-prune, and duplicated information may cause inconsistency. I propose to have these information added to the same Cylc configuration file, but in special comments. These comments will be omitted by Cylc, but they can be parsed by ESDM. This is similar for Doxygen comments in C/Java source file, or the leading line of a shell script, etc.}
-%\jk{Good suggestion! That absolutely depends how a Cylc file is parsed and analysed. Keeping it separately gives us the most flexibility and parsing comments could lead to misinterpreting already existing comments and acting wrongly. Still to consider.}
-
-%\hh{Other requirements of datasets may be: data block size/fragment size, 1-1 or N-1 access mode, IOPS intensive or throughput-intensive, etc. These will also be considered for data placement and migration.}
-%\jk{Fragment size/data blocks are handled by ESDM automatically. The access mode and access pattern is something that we could consider to add. However, difficult for scientists to judge}
-
 ESDM manages a pool of threads that should be created per compute node to achieve good performance and delegates the assignment of optimal block sizes to the storage backend.
 The number of threads is defined in the configuration file.
 As an example, based on the number of Object Storage Targets (OSTs) provided by both Lustre systems at DKRZ, performance tests already developed using ESDM~\cite{2019_3361225} shows that no more than 200 threads in total should be used to perform I/O to extract the best performance.
-%; more degrade it.
 To clarify the behaviour, ESDM distributes a single dataset across multiple storage devices depending on their characteristics.
 Since ESDM also supports several (non-POSIX) storage backends, an application can utilise all available storage systems without any modifications to the code.
 
@@ -593,7 +523,6 @@ An example of an I/O-workflow configuration file (\texttt{io.cylc}) is shown in 
 \label{lst:cylc}
 \end{figure}
 
-%In this example, the workflow file could define a cycle flexibly to be a month or a year according to the Cylc workflow file.
 In this example, the \texttt{io.cylc} file could define a cycle flexibly to be a month or a year according to the \texttt{flow.cylc} file.
 The notation is similar to the specification of Cylc workflows using a nested INI format.
 For each task, inputs and outputs are defined.
@@ -681,7 +610,6 @@ In the following, we describe the modifications we propose in this vision paper 
 
   \item \textbf{Job}
   A job might run on the same node as a previous job to utilise local storage.
-  %\bnl{Any interesting that needs this performance is running on dozens if not hundreds of nodes}
 
   \item \textbf{Script}
   Filenames are now generated by a replacement command that calls EIOS to create a pseudo filename.
@@ -717,35 +645,3 @@ We thank our collaborators Bryan Lawrence, Glenn Greed, David Matthews, and Hua 
 \bibliography{paper}
 
 \end{document}
-
-Machine Learning has been proven effective in replacing human-beings, and it may also adapt the workflow dynamically in case of unexpected situations (the system is down, nodes are unresponsive, etc.). (ref)
-
-From the recorded I/O accesses, we analyse the I/O patterns and dependencies associated with it to generate the configuration file.
-
-Potentially, EIOS may generate an \texttt{esdm.conf} file for the specific application to adjust the mapping of data to available storage targets.
-
-In particular, a system could store data that is of low value or cheap to reproduce on storage with little redundancy or trade storage space by the need to recompute data products.
-
-This scenario was developed to exemplify some of the potential optimisations we envision about \textbf{data placement}, \textbf{migration}, and \textbf{recomputation} in a heterogeneous storage environment.
-
-The user-specific storage locations are a viable option to run a workflow.
-
-The user might even have analysed various scenarios, such as depicted in Section \ref{sec:datamanagement}.
-
-Assuming the user can provide extra information in advance, ESDM can interact in the process before the user gives the data to the Cylc tool, using the gathered information to construct a tentative optimised workflow.
-
-Here, we focus on utilising a heterogeneous storage environment.
-
-Once we have access to the data pattern, the whole workflow can be improved by trading storage space by the need to recompute data products.
-
-With the right level of abstraction in place, potential data optimisations are unleashed in a heterogeneous storage system according to its characteristics and workflow specification.
-
-Exploiting the value and importance of data could improve the placement decisions on heterogeneous storage systems.
-
-Data systems usually do not respect, or have knowledge of, the importance of their inherent data.
-
-%\hh{I like this idea of machine learning in storage system. A lot of analysis has been done on relation of I/O pattern and storage performance. But how to know the I/O pattern, data pattern in advance? Machine Learning can be used to find pattern. These patterns can then be used to schedule storage resources, data placement, data staging/migration, etc. These pattern can be gradually learned from running cycles of workflows over time, such that policies can evolve to have better performance when more and more cycles of workflow complete. }
-
-CYLC_SUITE_SHARE_DIR
-Typically the data generated by cylc workflows is stored in the “share” directory which is referenced by an environment variable rather than a command:
-https://cylc.github.io/doc/built-sphinx/suite-config.html#suite-share-directories
