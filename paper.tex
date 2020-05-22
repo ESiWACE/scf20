@@ -35,7 +35,7 @@
     tabsize=2,
     commentstyle=\color{pgreen},
     keywordstyle=\color{pblue},
-    stringstyle=\color{pred},
+    stringstyle=\bfseries,
     moredelim=[il][\textcolor{pgrey}]{\[\]},
     moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%},
   columns=fullflexible,
@@ -117,7 +117,7 @@ At any point during workflow execution, only the dependence between the individu
 The information Cylc uses to control a given workflow is the task dependency.
 In a script file, the developers define, for each task, the parallelism settings and where the data is to be stored.
 
-\fig{width=0.8\columnwidth}{pic/cylc1}{Example of a Cylc workflow with its configuration file}
+\fig{width=0.8\columnwidth}{pic/cylc1}{Example of a Cylc workflow with its configuration file \cite{8675433}}
 
 Consider the Cylc workflow for a toy monthly cycling workflow in \cref{pic/cylc1}.
 In this workflow, an atmospheric model (labelled as \texttt{model} in the figure) simulates the physics from a current state to predict the future, for example, a month later.
@@ -165,7 +165,7 @@ In the following, each stage of the execution is further described.
     \begin{minipage}{.42\linewidth}
         \centering
         \includegraphics[width=0.42\textwidth]{pic/layers-xios}
-        \subcaption{I/O path for an MPI-parallel application}\label{pic/layers-xios}
+        \subcaption{I/O path for an MPI application}\label{pic/layers-xios}
     \end{minipage}
     \begin{minipage}{.58\linewidth}
         \centering
