@@ -65,7 +65,7 @@ The key contributions of this paper are:
 
 The vision proposed here is built on the belief that workflows composed of data, computing, and communication-intensive tasks should drive interfaces and hardware configurations to best support the programming models.
 When delivered, this work will increase the opportunity for smarter scheduling of computing by considering storage in heterogeneous storage systems.
-We illustrate the performance-impact on an example workload using a model built on measured performance data at DKRZ.
+We illustrate the performance-impact on an example workload using a model built on measured performance data using ESDM at DKRZ.
 
 \keywords{workflow, heterogeneous storage, data-driven, climate/weather}
 \end{abstract}
@@ -161,6 +161,13 @@ In the following, each stage of the execution is further described.
 
 \subsection{I/O Stack of a Parallel Application}
 
+Climate applications may have complex I/O stacks, as can be seen in \cref{pic/layers-xios}.
+In this case, we assume the application uses XIOS~\cite{xios}, which is providing domain-specific semantics to climate and weather.
+It may gather data from individual fields distributed across the machine (exploiting MPI for parallelism) and then uses NetCDF4~\cite{netcdf} to store data as a file.
+Under the hood, NetCDF4 uses the HDF5 API with its file format.
+Internally, HDF5 uses MPI and its data types to specify the nature of the data stored.
+Finally, data is stored on a parallel file system like Lustre which, on the server-side, stores data in a local file system on block devices such as SSDs and HDDs.
+
 \begin{figure}[b]
     \begin{minipage}{.42\linewidth}
         \centering
@@ -177,13 +184,6 @@ In the following, each stage of the execution is further described.
     \label{fig:34}
 \end{figure}
 
-Climate applications may have complex I/O stacks, as can be seen in \cref{pic/layers-xios}.
-In this case, we assume the application uses XIOS~\cite{xios}, which is providing domain-specific semantics to climate and weather.
-It may gather data from individual fields distributed across the machine (exploiting MPI for parallelism) and then uses NetCDF4~\cite{netcdf} to store data as a file.
-Under the hood, NetCDF4 uses the HDF5 API with its file format.
-Internally, HDF5 uses MPI and its data types to specify the nature of the data stored.
-Finally, data is stored on a parallel file system like Lustre which, on the server-side, stores data in a local file system on block devices such as SSDs and HDDs.
-
 Different applications involved in a workflow may use different I/O stacks to store their outputs.
 Naturally, the application which uses previously generated data as its inputs must use a compatible API to read the specific data format.
 In \cref{pic/layers-xios}, for example, XIOS may perform parallel I/O via the NetCDF4 API, allowing subsequent processes to read data directly using NetCDF4.
@@ -192,7 +192,7 @@ The goal of ESDM is to provide parallel I/O for parallel applications, with adva
 Implemented with a standalone API, it also provides NetCDF integration allowing usage in existing applications.
 Hence, in \cref{pic/layers-xios}, the HDF5 layer can be replaced with ESDM.
 
-\subsection{Data Center Infrastructure}
+\subsection{Data Centre Infrastructure}
 
 Data centres are providing an infrastructure consisting of computing and storage devices with different characteristics, making them more efficient for specific tasks and satisfying the needs of different workflows.
 Take, for example, the supercomputer Mistral at DKRZ, that consists of 3,321 nodes\footnote{\url{https://www.dkrz.de/up/systems/mistral}} and offers two types of compute nodes equipped with different CPUs and GPU nodes.
@@ -314,9 +314,9 @@ Taking into consideration the architecture and workflow information, a smarter s
 Value and priority can influence fault-tolerance strategies and imply the quality of service for performance and availability.
 Aspects like data reproducibility (can it be recomputed easily), type of the experiment (test, production), and runtime constraints for the overall and potential workflow could allow reducing costs and, hence, increasing scientific output.
 Next, we outline the two core strategies and potential the proposed vision can bring to improve current workflows.
-In the design proposed in this work (\cref{sec:design}), we will focus on the data placement strategy.
+In the design proposed in this work (\Cref{sec:design}), we will focus on the data placement strategy.
 
-\paragraph{Strategy: Data Placement.}
+\paragraph{Strategy: Data Placement}
 
 Data placement encompasses all data movement-related activities such as transfer, staging, replication, space allocation and de-allocation, registering and unregistering metadata, locating and retrieving data\footnote{https://www.igi-global.com/dictionary/data-aware-distributed-batch-scheduling/6782}.
 The general idea is to host a dataset on the storage system that is most favourable in terms of performance, cost-effectiveness, availability for the access pattern observed in the workflow.
@@ -374,7 +374,7 @@ As an example, in \cref{pic/workflow-s3-n}, the outcome of Task\,1 may be used d
 To achieve some level of independence between producer and consumer, data may also be kept in memory and cached.
 \end{description}
 
-\paragraph{Strategy: Data Reduction.}
+\paragraph{Strategy: Data Reduction}
 
 Data reduction reduces the amount of data stored.
 We discuss here two potential optimisations: \textbf{data compression}, and \textbf{data recomputation}.
@@ -431,7 +431,7 @@ To automatically make scheduling decisions, the software stack needs to: \vspace
 
 ESDM is used as I/O middleware in the parallel application (with NetCDF or directly) and orchestrates the I/O according to a simplified ESDM configuration file (\texttt{esdm.conf}).
 This file contains information about the available technology in the data centre, its I/O characteristics, and will be used to make decisions about how to prioritise I/O targets.
-In the example presented in \Cref{lst:esdm.conf}, we have three storage targets: two global accessible file systems (\texttt{lustre01} and \texttt{lustre02}), and one local file system in \texttt{/tmp} that can be accessed via the POSIX backend.
+In the example presented in \cref{lst:esdm.conf}, we have three storage targets: two global accessible file systems (\texttt{lustre01} and \texttt{lustre02}), and one local file system in \texttt{/tmp} that can be accessed via the POSIX backend.
 Each of them comes with a lightweight performance model and the maximum size of data fragments.
 The metadata section (Line 24) utilises here a POSIX interface to store the information about the ESDM objects. Internally, ESDM creates so-called containers and dataset objects to manage data fragments.
 
@@ -484,7 +484,7 @@ While the current system information and performance model are based on latency 
 \subsection{Extended Workflow Description}
 
 The user now has to provide information about datasets required for input and the generated output for each workflow task in a separate file similarly to Cylc's workflow configuration file.
-An example of an I/O-workflow configuration file (\texttt{io.cylc}) is shown in \Cref{lst:cylc}. In this file, information about Task\,1 is given by example, and we expect the extra information about all tasks in the same file. Ultimately, this could be integrated into the workflow specification file of Cylc.
+An example of an I/O-workflow configuration file (\texttt{io.cylc}) is shown in \cref{lst:cylc}. In this file, information about Task\,1 is given by example, and we expect the extra information about all tasks in the same file. Ultimately, this could be integrated into the workflow specification file of Cylc.
 
 \begin{figure}[!ht]
 
@@ -566,8 +566,9 @@ By allowing to run using an empty I/O workflow specification and monitoring I/O 
 
 From the list of opportunities, we realise data placement and migration in a heterogeneous (multi-storage) environment.
 These goals will be achieved via the proposed I/O-aware scheduler, called here EIOS (ESDM I/O Scheduler).
-EIOS will make the schedule considering Cylc workflow, and ESDM provided system characteristics.
-Components of it are involved in different steps of the workflow and the I/O path.
+EIOS will make the schedule considering Cylc workflow and ESDM provided system characteristics.
+We are working together with Cylc Team in developing how EIOS interfaces with Cylc.
+% Components of it are involved in different steps of the workflow and the I/O path.
 While Cylc schedules the workflow, EIOS can provide hints about colocating tasks which provide the opportunity for keeping data in local storage.
 Our design imposes only minor changes to Cylc as the core requirements are covered by normal functionalities:
 
@@ -586,7 +587,7 @@ We plan on using the Cylc broadcast functionality to change the directives used 
 \ \\ \vspace{-0.5cm}
 
 This will be achieved by defining environment variables in the job script which are set to the output of another external command (run on the job host).
-This command, provided by EIOS, will have access to all the normal Cylc environment variables providing details about the current task.
+This command, also provided by EIOS, will have access to all the normal Cylc environment variables with details about the current task.
 \end{description}
 
 We plan on utilising DDN's IME API to pin data in IME and to trigger migrations between IME and a storage backend explicitly.
@@ -597,6 +598,7 @@ Ultimately, when a user-script runs, the information about the intended I/O sche
 \subsection{Modified Workflow Execution}
 
 The steps to execute a workflow enriched with I/O information and perform smarter scheduling is depicted in \cref{pic/stages-io}.
+Components of EIOS are involved in different steps of the workflow and the I/O path.
 The suggested alterations can be seen in boxes pointed by red arrows, and the remaining components are the current state-of-the-art for workflows in climate and weather from \cref{pic/stages}.
 In the following, we describe the modifications we propose in this vision paper for each component involved in the software stack.
 
