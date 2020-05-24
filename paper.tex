@@ -646,18 +646,23 @@ In the following, we describe the modifications we propose in this vision paper 
 \section{Potential Benefit}
 \label{sec:evaluation}
 
-In this section, we discuss the potential benefit the scheduler may have considering DKRZ Mistral supercomputer , ESDM current version and a hypothetical workload related to \cref{pic/cylc1}.
+In this section, we discuss the potential benefit the scheduler may have considering DKRZ Mistral supercomputer, ESDM current version and a hypothetical workload related to \cref{pic/cylc1}.
+We focus on the model execution and the subsequent verification and postprocessing steps.
 
 \fig{width=0.6\columnwidth}{pic/data}{Lustre performance for 100, 200, and 500 nodes}
 
-\cref{pic/data} shows the read/write performance when using ESDM to store a time series of 10 steps of a variable with 200k*200k dimension (about 1km global resolution of the model, equivalent to 3 TB of data in total). It is stored on either Lustre02 or both Lustre file systems -- ESDM will split the data of a single variable internally and distribute it across file systems. While the mapping is not yet optimal, it shows that write performance benefits from this approach. Note that each Lustre file system has 128 OSTs (250 total) which means that performance will not improve beyond 500 nodes.
+\cref{pic/data} shows the read/write performance when using ESDM to store a time series of 10 steps of a variable with 200k*200k dimension (about 1km global resolution of the model, equivalent to 3 TB of data in total).
+Note while we only consider the volume data for one variable with one level and timstep, it could be multiplied with a sensible number of levels and timesteps of the model.
+It is stored on either Lustre02 or both Lustre file systems -- ESDM will split the data of a single variable internally and distribute it across file systems. While the mapping is not yet optimal, it shows that write performance benefits from this approach. Note that each Lustre file system has 128 OSTs (250 total) which means that performance will not improve beyond 500 nodes.
 
 
-In our scenario, we compare the usage of the node-local file system with a globally shared Lustre file system to store intermediate data. When the subsequent job requires the whole data to generate the data product, it could be run on the same nodes.
+In our scenario, we compare the usage of the node-local file system with a globally shared Lustre file system to store intermediate data.
+When the subsequent (verification and postprocessing) job requires the whole data to generate the data product, it could be run on the same nodes.
 
-Each local SSD of Mistral is a Micron M600 MTFD (256 GB) which has a nominal sequential read/write performance slightly above 500 MB/s. Hence, with 500 nodes, we could achieve 250 GB/s which surpasses the Lustre performance observed in the figure. Another benefit of using local storage is that the interference with IO activities of other jobs would be minimized. Since DKRZ has about 3,000 nodes, using the local SSD would sum up to 1.5 TB/s. For model runs with 1km resolution, such large runs would be plausible.
+Each local SSD of Mistral is a Micron M600 MTFD (256 GB) which has a nominal sequential read/write performance slightly above 500 MB/s. Hence, with 500 nodes, we could achieve 250 GB/s which surpasses the Lustre performance observed in the figure. Another benefit of using local storage is that the interference with IO activities of other jobs would be minimized. Since DKRZ has about 3,000 nodes, using the local SSD would sum up to 1.5 TB/s. For model runs with 1km resolution, such big configurations would be plausible.
 
-Even more, for 500 nodes, our 3 TB of data would be about 6 GB per node, which could be cached in memory and overlap with the computation phases. Actually, for all reasonable sizes of the experimental data with 500+ nodes, the observed performance of node-local storage would be higher. It might be suitable to couple the model with a parallel analysis process directly, in which case an in-memory file system tmpfs could be used. In this case, the performance per node can be assumed to be 3 GiB/s making it a viable option for smaller runs.
+Even more, for 500 nodes, our 3 TB of data would be about 6 GB per node, which could be cached in memory and overlap with the computation phases. Actually, for all reasonable sizes of the experimental data with 500+ nodes, the observed performance of node-local storage would be higher, and thus, improving the execution time of such a model.
+It might also be suitable to couple the model with a parallel analysis process directly, in which case an in-memory file system tmpfs could be used. In this case, the performance per node can be assumed to be 3 GiB/s making it a viable option for smaller runs.
 
 Users could make the decision to use the node-local storage manually and create specific run-scripts and create a similar behavior utilizing the local storage. However, this would be tedious and error-prone. The purpose of our proposal is to establish an abstraction layer to allow for semi-automatic decision making and remove the manual intervention.
 
