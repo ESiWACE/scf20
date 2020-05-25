@@ -670,7 +670,7 @@ While the mapping is not yet optimal, the figure shows that the write performanc
 % which means that performance will not improve beyond 500 nodes.
 
 Another improvement can be achieved by using local storage.
-Each local SSD of Mistral is a Micron M600 MTFD (256\,GB), which has a nominal sequential read/write performance slightly above 500\,MB/s.
+Each local SSD of Mistral is a Micron M600 MTFD\footnote{https://www.anandtech.com/show/8528/micron-m600-128gb-256gb-1tb-ssd-review-nda-placeholder} (256\,GB), which has a nominal sequential read/write performance slightly above 500\,MB/s.
 Hence, with 500 nodes, we could achieve 250\,GB/s, which surpasses the Lustre performance observed in \cref{pic/data}.
 Even more, our 3\,TB of data would be about 6\,GB per node, which could be cached in memory and overlap with the computation phases.
 An additional benefit of using local storage is that the interference with I/O activities of other jobs would be minimised.
