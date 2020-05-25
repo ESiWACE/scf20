@@ -151,7 +151,7 @@ Next, each stage of the execution is further described.
   \item \textbf{Job} provides the environment with the resources and runs the user-provided program or script on one of the nodes allocated for it.
   Local variables containing information about the environment of the batch job, e.g., the compute nodes allocated, enact the Cylc provided script on the node.
 
-  \item \textbf{Script} executes the commands with one or multiple (potentially parallel) applications to run sequentially.
+  \item \textbf{Script} starts the commands sequentially (a command can be a parallel application).
   During the creation of the script, Cylc has included variables that describe the task in the workflow.
   The information is typically fed into the application(s) representing the task and defining the storage location.
   The script uses commands to generate filenames considering the cycle and may store data in a workflow-specific shared directory.
@@ -437,7 +437,8 @@ To automatically make scheduling decisions, the software stack needs to: \vspace
 
 \subsection{System Information}
 
-ESDM is used here as the I/O middleware in the parallel application (with NetCDF or directly) and orchestrates the I/O according to a simplified ESDM configuration file (\texttt{esdm.conf}).
+The system information of the design is realized using already available capabilities in the ESDM middleware.
+We assume ESDM is used as the I/O middleware in the parallel application (with NetCDF or directly) and orchestrates the I/O according to a simplified ESDM configuration file (\texttt{esdm.conf}).
 This file contains information about the available technology in the data centre, its I/O characteristics, and will be used to make decisions about how to prioritise I/O targets.
 In the example presented in \cref{lst:esdm.conf}, we have three storage targets: two global accessible file systems (\texttt{lustre01} and \texttt{lustre02}), and one local file system in \texttt{/tmp} that can be accessed via the POSIX backend.
 Each of them comes with a lightweight performance model and the maximum size of data fragments.
@@ -662,12 +663,10 @@ When the subsequent jobs require the whole data to generate the data product, th
 \fig{width=0.6\columnwidth}{pic/data}{Lustre performance for 100, 200, and 500 nodes}
 
 \cref{pic/data} shows the read/write performance when using ESDM to store a time series of 10 steps of a variable with 200k $\times$ 200k dimension (about 1\,km global resolution of the model, equivalent to 3\,TB of data in total).
-Note that, while we only consider the volume data for one variable with one level and one timestep, this value could be multiplied by a sensible number of levels and timesteps of the model.
+Note that, while we only consider the volume data for one variable with one level and ten timesteps, this value could be multiplied by a sensible number of levels and timesteps of the model.
 Data is stored on either Lustre02 or both Lustre file systems -- ESDM splits data of a single variable internally and distributes them across the file systems.
 While the mapping is not yet optimal, the figure shows that the write performance benefits from this approach.
-% Note that each Lustre file system has 128 Object Storage Targets (OSTs)
-% (250 in total)
-% which means that performance will not improve beyond 500 nodes.
+In our observations, performance will not improve beyond 500 nodes, which might be due to the fact that each Lustre file system has 128 Object Storage Targets (OSTs) (250 in total).
 
 Another improvement can be achieved by using local storage.
 Each local SSD of Mistral is a Micron M600 MTFD\footnote{https://www.anandtech.com/show/8528/micron-m600-128gb-256gb-1tb-ssd-review-nda-placeholder} (256\,GB), which has a nominal sequential read/write performance slightly above 500\,MB/s.
