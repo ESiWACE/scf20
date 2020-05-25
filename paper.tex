@@ -655,10 +655,12 @@ In the following, we describe the modifications we propose in this vision paper 
 \section{Potential Benefit}
 \label{sec:evaluation}
 
-In this section, we discuss the potential benefit that our vision for I/O-aware workflows may have considering DKRZ Mistral supercomputer, ESDM current version and a hypothetical workload related to the workflow in \cref{pic/cylc1}.
-In our scenario, we compare the usage of the node-local file system with a globally shared Lustre file system to store intermediate data.
+In this section, we discuss the potential performance benefit that our vision for I/O-aware workflows may have considering DKRZ Mistral supercomputer, ESDM current version and a hypothetical workload related to the workflow in \cref{pic/cylc1}.
+In our scenario, we compare the usage of the node-local file system\footnote{%
+We assume the availability and fault-tolerance of the nodes is non-uncritical for the particular workload -- typically nodes can be repaired and returned to the pool within days.} with a globally shared Lustre file system to store intermediate data.
 We focus on the model execution and subsequent verification and postprocessing steps.
-When the subsequent jobs require the whole data to generate the data product, they can be run on the same nodes.
+Firstly, checkpoints of a long model execution chain could be stored locally and restart from there.
+When the subsequent jobs require the whole data to generate a product, they can be run on the same nodes.
 
 \fig{width=0.6\columnwidth}{pic/data}{Lustre performance for 100, 200, and 500 nodes}
 
@@ -666,7 +668,9 @@ When the subsequent jobs require the whole data to generate the data product, th
 Note that, while we only consider the volume data for one variable with one level and ten timesteps, this value could be multiplied by a sensible number of levels and timesteps of the model.
 Data is stored on either Lustre02 or both Lustre file systems -- ESDM splits data of a single variable internally and distributes them across the file systems.
 While the mapping is not yet optimal, the figure shows that the write performance benefits from this approach.
-In our observations, performance will not improve beyond 500 nodes, which might be due to the fact that each Lustre file system has 128 Object Storage Targets (OSTs) (250 in total).
+In our observations, performance will not improve beyond 500 nodes, which might be due to the fact that each Lustre file system has 128 Object Storage Targets (256 in total).
+
+
 
 Another improvement can be achieved by using local storage.
 Each local SSD of Mistral is a Micron M600 MTFD\footnote{https://www.anandtech.com/show/8528/micron-m600-128gb-256gb-1tb-ssd-review-nda-placeholder} (256\,GB), which has a nominal sequential read/write performance slightly above 500\,MB/s.
@@ -674,7 +678,7 @@ Hence, with 500 nodes, we could achieve 250\,GB/s, which surpasses the Lustre pe
 Even more, our 3\,TB of data would be about 6\,GB per node, which could be cached in memory and overlap with the computation phases.
 An additional benefit of using local storage is that the interference with I/O activities of other jobs would be minimised.
 Actually, for all reasonable sizes of the experimental data with 500+ nodes, the observed performance of node-local storage would be higher, and thus, improving the workflow execution time.
-Since DKRZ has more than 3,000 nodes, using the local SSD would sum up to 1.5\,TB/s.
+Since DKRZ has more than 3,000 nodes, using the local SSD would sum up to 1.5\,TB/s speeding up the IO phase by 7x.
 For model runs with 1\,km resolution, such configurations would be reasonable.
 It might also be suitable to couple the model with a parallel analysis process directly using an in-memory file system such as \texttt{tmpfs}.
 In this case, the performance per node can be assumed to be 3\,GiB/s, making it a viable option for smaller runs.
